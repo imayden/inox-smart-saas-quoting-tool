@@ -1,7 +1,8 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- local brand asset must remain a direct static URL on Netlify */
+
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import { APP_CONFIG, PRICING_PLANS, type CapacityKey } from "@/app/config/pricing";
 import {
   calculatePlanQuote,
@@ -57,10 +58,11 @@ export function PricingConfigurator() {
       <div className={styles.shell}>
         <header className={styles.hero}>
           <div className={styles.brandRow}>
-            <Image
+            <img
               alt="INOX Smart"
               className={styles.logo}
               height="37"
+              loading="eager"
               src="/brand/inox-smart-logo-light.png"
               width="279"
             />
