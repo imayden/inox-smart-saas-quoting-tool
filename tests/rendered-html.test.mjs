@@ -28,8 +28,10 @@ test("server-renders the finished pricing configurator", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>INOX Smart SaaS Pricing Configurator<\/title>/i);
-  assert.match(html, /SaaS Pricing Configurator/);
+  assert.match(html, /<title>INOX Smart SaaS Quoting Tool<\/title>/i);
+  assert.match(html, /SaaS Quoting Tool/);
+  assert.match(html, /INTERNAL USE ONLY/);
+  assert.match(html, /v2\.0 by Ayden/);
   assert.match(html, /src="\/brand\/inox-smart-logo-light\.png"/);
   assert.doesNotMatch(html, /_next\/image[^>]*inox-smart-logo-light/);
   assert.match(html, /Capacity needed/);

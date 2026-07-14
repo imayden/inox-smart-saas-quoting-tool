@@ -24,7 +24,7 @@ if (!response.ok) {
 }
 
 const html = await response.text();
-if (!html.includes("INOX Smart SaaS Pricing Configurator")) {
+if (!html.includes("INOX Smart SaaS Quoting Tool")) {
   throw new Error("Static export did not contain the finished configurator.");
 }
 

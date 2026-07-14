@@ -33,8 +33,9 @@ export interface PricingPlan {
 
 export const APP_CONFIG = {
   brandName: "INOX Smart",
-  productName: "SaaS Pricing Configurator",
-  eyebrow: "Partner quoting tool",
+  productName: "SaaS Quoting Tool",
+  eyebrow: "INTERNAL USE ONLY",
+  versionLabel: "v2.0 by Ayden",
   description:
     "Enter the capacity your customer needs. The configurator automatically selects the lowest-priced plan while allowing a manual plan override.",
   quoteTitle: "INOX Smart SaaS Quote",

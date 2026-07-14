@@ -17,7 +17,7 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "INOX Smart SaaS Pricing Configurator",
+  title: "INOX Smart SaaS Quoting Tool",
   description:
     "Configure INOX Smart SaaS plans, calculate add-ons, and export a branded PDF quote.",
   icons: {
@@ -25,14 +25,14 @@ export const metadata: Metadata = {
     shortcut: "/brand/xs-logo.png",
   },
   openGraph: {
-    title: "INOX Smart SaaS Pricing Configurator",
+    title: "INOX Smart SaaS Quoting Tool",
     description: "Configure. Compare. Quote.",
     type: "website",
     images: [{ url: "/og.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "INOX Smart SaaS Pricing Configurator",
+    title: "INOX Smart SaaS Quoting Tool",
     description: "Configure. Compare. Quote.",
     images: ["/og.png"],
   },

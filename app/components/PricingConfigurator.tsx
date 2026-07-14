@@ -66,7 +66,7 @@ export function PricingConfigurator() {
               src="/brand/inox-smart-logo-light.png"
               width="279"
             />
-            <span className={styles.version}>Configurator 2.0</span>
+            <span className={styles.version}>{APP_CONFIG.versionLabel}</span>
           </div>
           <div className={styles.heroGrid}>
             <div>
