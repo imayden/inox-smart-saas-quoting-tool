@@ -30,6 +30,7 @@ test("server-renders the finished pricing configurator", async () => {
   const html = await response.text();
   assert.match(html, /<title>INOX Smart SaaS Pricing Configurator<\/title>/i);
   assert.match(html, /SaaS Pricing Configurator/);
+  assert.match(html, /inox-smart-logo-light\.png/);
   assert.match(html, /Capacity needed/);
   assert.match(html, /Choose a plan/);
   assert.match(html, /Download Quote/);

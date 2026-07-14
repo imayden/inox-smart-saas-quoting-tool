@@ -29,6 +29,7 @@ app/config/pricing.ts               Business-editable pricing and copy
 app/lib/pricing.ts                  Pure calculation and auto-match logic
 app/components/                     Reusable interface components and CSS modules
 app/pdf/generateQuotePdf.ts         Letter-size PDF renderer
+public/brand/                       Light/dark official logo variants
 tests/pricing.test.ts               Pricing compatibility tests
 tests/rendered-html.test.mjs        Built-page smoke test
 ```

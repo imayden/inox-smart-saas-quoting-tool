@@ -15,7 +15,7 @@ const quote = calculatePlanQuote(
   PRICING_PLANS[1],
 );
 
-const logoBytes = await readFile("public/brand/inox-smart-logo.png");
+const logoBytes = await readFile("public/brand/inox-smart-logo-dark.png");
 const logo = `data:image/png;base64,${logoBytes.toString("base64")}`;
 const pdf = buildQuotePdfDocument(quote, "both", {
   generatedAt: new Date(),

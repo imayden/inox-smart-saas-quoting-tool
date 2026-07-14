@@ -61,8 +61,8 @@ export function PricingConfigurator() {
               alt="INOX Smart"
               className={styles.logo}
               height="37"
-              src="/brand/inox-smart-logo.png"
-              width="283"
+              src="/brand/inox-smart-logo-light.png"
+              width="279"
             />
             <span className={styles.version}>Configurator 2.0</span>
           </div>

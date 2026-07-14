@@ -50,7 +50,7 @@ function createQuoteId(date: Date): string {
 
 async function loadLogo(): Promise<string | null> {
   try {
-    const response = await fetch("/brand/inox-smart-logo.png");
+    const response = await fetch("/brand/inox-smart-logo-dark.png");
     if (!response.ok) return null;
     const bytes = new Uint8Array(await response.arrayBuffer());
     let binary = "";
@@ -239,7 +239,7 @@ export function buildQuotePdfDocument(
   doc.rect(0, 0, PDF.pageWidth, 8, "F");
 
   if (logo) {
-    doc.addImage(logo, "PNG", PDF.margin, 26, 132, 17.25);
+    doc.addImage(logo, "PNG", PDF.margin, 26, 132, 17.5);
   } else {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
