@@ -1,0 +1,139 @@
+.section {
+  margin-top: 34px;
+}
+
+.headerRow {
+  align-items: flex-end;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.headerRow h2 {
+  margin-top: 4px;
+}
+
+.optional {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.notice {
+  background: var(--brand-soft);
+  border-left: 4px solid var(--brand);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  padding: 11px 13px;
+}
+
+.grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  min-height: 286px;
+  padding: 20px;
+  position: relative;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.card:hover {
+  border-color: var(--brand);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 40%, transparent);
+  outline-offset: 3px;
+}
+
+.selected {
+  background: linear-gradient(180deg, var(--brand-soft), var(--surface) 55%);
+  border: 2px solid var(--brand);
+  padding: 19px;
+}
+
+.selectionMark {
+  align-self: flex-end;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.selected .selectionMark {
+  color: var(--brand-ink);
+}
+
+.planName {
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  margin-top: 6px;
+}
+
+.price {
+  color: var(--brand-ink);
+  font-size: 17px;
+  font-weight: 800;
+  margin-top: 7px;
+}
+
+.price small {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rule {
+  background: var(--border);
+  height: 1px;
+  margin: 17px 0 13px;
+  width: 100%;
+}
+
+.capacityList {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+
+.capacityList b {
+  display: inline-block;
+  font-size: 13px;
+  min-width: 30px;
+}
+
+.addonNote {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.45;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+@media (max-width: 850px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    min-height: 0;
+  }
+}

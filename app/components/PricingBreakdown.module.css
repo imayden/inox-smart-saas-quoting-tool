@@ -1,0 +1,139 @@
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  margin-top: 34px;
+  overflow: hidden;
+}
+
+.header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 26px 18px;
+}
+
+.header h2 {
+  margin-top: 4px;
+}
+
+.planPill {
+  background: var(--brand);
+  border-radius: 999px;
+  color: #172008;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 7px 11px;
+  text-transform: uppercase;
+}
+
+.breakdown {
+  border-top: 1px solid var(--border);
+  padding: 9px 26px 18px;
+}
+
+.line {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 54px;
+  padding: 9px 0;
+}
+
+.line > span:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.line small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.line > b {
+  white-space: nowrap;
+}
+
+.addonLine {
+  border-top: 1px dashed var(--border);
+  color: var(--text-soft);
+  padding-left: 16px;
+}
+
+.noAddons {
+  border-top: 1px dashed var(--border);
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 18px 0;
+}
+
+.subtotal {
+  border-top: 1px solid var(--border-strong);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.msrpLine {
+  color: var(--text-muted);
+  min-height: 38px;
+  padding-top: 0;
+}
+
+.metrics {
+  background: var(--ink);
+  display: grid;
+  gap: 1px;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.metric {
+  background: var(--ink);
+  color: #fff;
+  display: grid;
+  gap: 4px;
+  padding: 22px 26px;
+}
+
+.metric + .metric {
+  border-left: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.metric span {
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.metric strong {
+  color: var(--brand);
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: -0.03em;
+}
+
+.metric small {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 11px;
+}
+
+@media (max-width: 600px) {
+  .header,
+  .breakdown {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .metric + .metric {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.13);
+  }
+}
