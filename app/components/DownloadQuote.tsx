@@ -6,7 +6,8 @@ import {
   downloadQuotePdfFile,
   type QuoteDisplayMode,
 } from "@/app/pdf/generateQuotePdf";
-import type { PlanQuote } from "@/app/lib/pricing";
+import { APP_CONFIG } from "@/app/config/pricing";
+import { formatCurrency, type PlanQuote } from "@/app/lib/pricing";
 import styles from "./DownloadQuote.module.css";
 
 const MODES: readonly {
@@ -37,12 +38,171 @@ interface DownloadQuoteProps {
 
 interface ReadyPdf {
   fileName: string;
+  generatedOn: string;
   quoteKey: string;
   url: string;
 }
 
 function subscribeToEmbeddingState() {
   return () => undefined;
+}
+
+function pricingViewLabel(mode: QuoteDisplayMode) {
+  return mode === "both" ? "NET + MSRP" : mode.toUpperCase();
+}
+
+function QuotePreview({
+  file,
+  mode,
+  quote,
+}: {
+  file: ReadyPdf;
+  mode: QuoteDisplayMode;
+  quote: PlanQuote;
+}) {
+  const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
+  const pricingRows = [
+    {
+      description: `${quote.plan.name} base monthly plan`,
+      net: quote.plan.monthlyNet,
+    },
+    ...activeAddons.map((line) => ({
+      description: `${line.label} · +${line.addonUnits} (${line.addonCount} add-on${line.addonCount === 1 ? "" : "s"})`,
+      net: line.addonNetCost,
+    })),
+  ];
+  const totals: readonly (readonly [string, number])[] =
+    mode === "both"
+      ? [
+          ["Monthly NET", quote.monthlyNet],
+          ["Yearly NET", quote.yearlyNet],
+          ["Monthly MSRP", quote.monthlyMsrp],
+          ["Yearly MSRP", quote.yearlyMsrp],
+        ]
+      : mode === "net"
+        ? [
+            ["Monthly NET", quote.monthlyNet],
+            ["Yearly NET", quote.yearlyNet],
+          ]
+        : [
+            ["Monthly MSRP", quote.monthlyMsrp],
+            ["Yearly MSRP", quote.yearlyMsrp],
+          ];
+
+  return (
+    <article className={styles.previewSheet} aria-label="Generated quote preview">
+      <header className={styles.sheetHeader}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img alt="INOX Smart" src="/brand/inox-smart-logo-dark.png" />
+        <span>SaaS Quote</span>
+      </header>
+
+      <div className={styles.sheetTitle}>
+        <h3>{APP_CONFIG.quoteTitle}</h3>
+        <p>{APP_CONFIG.quoteSubtitle}</p>
+      </div>
+
+      <dl className={styles.sheetSummary}>
+        <div>
+          <dt>Selected plan</dt>
+          <dd>{quote.plan.name}</dd>
+        </div>
+        <div>
+          <dt>Generated</dt>
+          <dd>{file.generatedOn}</dd>
+        </div>
+        <div>
+          <dt>Pricing view</dt>
+          <dd>{pricingViewLabel(mode)}</dd>
+        </div>
+      </dl>
+
+      <section className={styles.sheetBlock}>
+        <h4>Included capacity</h4>
+        <div className={styles.tableScroll}>
+          <table>
+            <thead>
+              <tr>
+                <th>Capacity</th>
+                <th>Base</th>
+                <th>Add-on capacity</th>
+                <th>Total included</th>
+                <th>Add-on {pricingViewLabel(mode)}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {quote.lines.map((line) => (
+                <tr key={line.key}>
+                  <th scope="row">{line.label}</th>
+                  <td>{line.baseIncluded}</td>
+                  <td>
+                    {line.addonCount > 0
+                      ? `+${line.addonUnits} (${line.addonCount} × ${line.addonStep})`
+                      : "—"}
+                  </td>
+                  <td>{line.totalCapacity}</td>
+                  <td>
+                    {line.addonCount === 0
+                      ? "—"
+                      : mode === "both"
+                        ? `${formatCurrency(line.addonNetCost)} / ${formatCurrency(line.addonMsrpCost)}`
+                        : formatCurrency(
+                            mode === "net" ? line.addonNetCost : line.addonMsrpCost,
+                          )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className={styles.sheetBlock}>
+        <h4>Pricing detail</h4>
+        <div className={styles.tableScroll}>
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                {mode !== "msrp" && <th>NET</th>}
+                {mode !== "net" && <th>MSRP</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {pricingRows.map((row) => (
+                <tr key={row.description}>
+                  <th scope="row">{row.description}</th>
+                  {mode !== "msrp" && <td>{formatCurrency(row.net)}</td>}
+                  {mode !== "net" && (
+                    <td>{formatCurrency(row.net * APP_CONFIG.msrpMultiplier)}</td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className={styles.sheetTotals} aria-label="Quote totals">
+        {totals.map(([label, amount], index) => (
+          <div className={index === 0 ? styles.primaryTotal : ""} key={label}>
+            <span>{label}</span>
+            <strong>{formatCurrency(amount)}</strong>
+            <small>{APP_CONFIG.currency}</small>
+          </div>
+        ))}
+      </section>
+
+      <p className={styles.sheetDisclaimer}>
+        <strong>For reference only</strong> — This quote is not a formal invoice or
+        binding offer.
+      </p>
+      <footer className={styles.sheetFooter}>
+        <span>{APP_CONFIG.brandName}</span>
+        <span>Letter · 8.5 × 11 in · 1 page</span>
+      </footer>
+    </article>
+  );
 }
 
 export function DownloadQuote({ quote }: DownloadQuoteProps) {
@@ -83,6 +243,11 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
 
       setReadyPdf({
         fileName: file.fileName,
+        generatedOn: new Intl.DateTimeFormat("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }).format(new Date()),
         quoteKey,
         url: URL.createObjectURL(file.blob),
       });
@@ -187,14 +352,14 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
         <div className={styles.preview}>
           <div className={styles.previewHeader}>
             <div>
-              <span>PDF preview</span>
+              <span>Quote preview</span>
               <strong>{currentReadyPdf.fileName}</strong>
             </div>
             <button onClick={() => setShowPreview(false)} type="button">
               Close preview
             </button>
           </div>
-          <iframe src={currentReadyPdf.url} title="Generated INOX Smart PDF quote" />
+          <QuotePreview file={currentReadyPdf} mode={mode} quote={quote} />
         </div>
       )}
     </section>
