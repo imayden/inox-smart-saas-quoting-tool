@@ -131,26 +131,34 @@
   font-size: 22px;
 }
 
-.action button {
+.action button,
+.downloadButton {
+  align-items: center;
   background: var(--brand);
   border: 0;
   border-radius: 9px;
   color: #172008;
   cursor: pointer;
+  display: flex;
   font: inherit;
   font-size: 12px;
   font-weight: 800;
+  justify-content: center;
   min-height: 43px;
   padding: 10px 14px;
+  text-align: center;
+  text-decoration: none;
   transition: filter 160ms ease, transform 160ms ease;
 }
 
-.action button:hover:not(:disabled) {
+.action button:hover:not(:disabled),
+.downloadButton:hover {
   filter: brightness(1.06);
   transform: translateY(-1px);
 }
 
-.action button:focus-visible {
+.action button:focus-visible,
+.downloadButton:focus-visible {
   outline: 3px solid rgba(255, 255, 255, 0.75);
   outline-offset: 3px;
 }
@@ -158,6 +166,13 @@
 .action button:disabled {
   cursor: wait;
   opacity: 0.68;
+}
+
+.action .secondaryButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  min-height: 38px;
 }
 
 .action > p {
@@ -174,10 +189,64 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
-.pdfReady a {
-  color: var(--brand);
+.preview {
+  background: var(--ink);
+  border-radius: var(--radius-lg);
+  display: grid;
+  gap: 12px;
+  grid-column: 1 / -1;
+  padding: 14px;
+}
+
+.previewHeader {
+  align-items: center;
+  color: #fff;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+}
+
+.previewHeader > div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.previewHeader span {
+  color: rgba(255, 255, 255, 0.58);
+  font-size: 9px;
   font-weight: 750;
-  text-underline-offset: 2px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.previewHeader strong {
+  color: var(--brand);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.previewHeader button {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  min-height: 34px;
+  padding: 7px 11px;
+}
+
+.preview iframe {
+  background: #fff;
+  border: 0;
+  border-radius: 8px;
+  height: min(68vh, 720px);
+  min-height: 520px;
+  width: 100%;
 }
 
 @media (max-width: 900px) {
@@ -198,5 +267,9 @@
 
   .action {
     grid-column: auto;
+  }
+
+  .preview iframe {
+    min-height: 430px;
   }
 }
