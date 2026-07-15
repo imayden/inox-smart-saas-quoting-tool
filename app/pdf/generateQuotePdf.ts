@@ -218,6 +218,11 @@ export interface PdfBuildOptions {
   logo?: string | null;
 }
 
+export interface QuotePdfFile {
+  blob: Blob;
+  fileName: string;
+}
+
 export function buildQuotePdfDocument(
   quote: PlanQuote,
   mode: QuoteDisplayMode,
@@ -324,13 +329,35 @@ export function buildQuotePdfDocument(
   return doc;
 }
 
-export async function generateQuotePdf(
+export async function createQuotePdfFile(
   quote: PlanQuote,
   mode: QuoteDisplayMode,
-): Promise<void> {
+): Promise<QuotePdfFile> {
   const generatedAt = new Date();
   const logo = await loadLogo();
   const doc = buildQuotePdfDocument(quote, mode, { generatedAt, logo });
   const dateForFile = generatedAt.toISOString().slice(0, 10);
-  doc.save(`${APP_CONFIG.quoteFilePrefix}-${quote.plan.id}-${dateForFile}.pdf`);
+  return {
+    blob: doc.output("blob"),
+    fileName: `${APP_CONFIG.quoteFilePrefix}-${quote.plan.id}-${dateForFile}.pdf`,
+  };
+}
+
+export function downloadQuotePdfFile(file: QuotePdfFile): void {
+  const url = URL.createObjectURL(file.blob);
+  const link = document.createElement("a");
+  link.download = file.fileName;
+  link.href = url;
+  link.style.display = "none";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+export async function generateQuotePdf(
+  quote: PlanQuote,
+  mode: QuoteDisplayMode,
+): Promise<void> {
+  downloadQuotePdfFile(await createQuotePdfFile(quote, mode));
 }

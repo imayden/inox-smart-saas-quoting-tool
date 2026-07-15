@@ -4,6 +4,7 @@ import { PRICING_PLANS } from "../app/config/pricing";
 import { calculatePlanQuote, createEmptyRequirements } from "../app/lib/pricing";
 import {
   buildQuotePdfDocument,
+  createQuotePdfFile,
   type QuoteDisplayMode,
 } from "../app/pdf/generateQuotePdf";
 
@@ -34,3 +35,11 @@ for (const mode of ["net", "msrp", "both"] as const satisfies readonly QuoteDisp
     assert.ok(bytes.byteLength > 5_000);
   });
 }
+
+test("creates a browser-downloadable PDF file", async () => {
+  const file = await createQuotePdfFile(quote, "both");
+
+  assert.equal(file.blob.type, "application/pdf");
+  assert.match(file.fileName, /^inox-smart-saas-quote-enterprise-\d{4}-\d{2}-\d{2}\.pdf$/);
+  assert.ok(file.blob.size > 5_000);
+});

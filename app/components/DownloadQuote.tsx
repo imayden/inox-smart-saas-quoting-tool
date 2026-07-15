@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { generateQuotePdf, type QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
+import { useState, useSyncExternalStore } from "react";
+import {
+  createQuotePdfFile,
+  downloadQuotePdfFile,
+  type QuoteDisplayMode,
+} from "@/app/pdf/generateQuotePdf";
 import type { PlanQuote } from "@/app/lib/pricing";
 import styles from "./DownloadQuote.module.css";
 
@@ -31,17 +35,71 @@ interface DownloadQuoteProps {
   quote: PlanQuote;
 }
 
+function subscribeToEmbeddingState() {
+  return () => undefined;
+}
+
 export function DownloadQuote({ quote }: DownloadQuoteProps) {
   const [mode, setMode] = useState<QuoteDisplayMode>("both");
   const [isGenerating, setIsGenerating] = useState(false);
+  const isEmbedded = useSyncExternalStore(
+    subscribeToEmbeddingState,
+    () => window.self !== window.top,
+    () => false,
+  );
+  const [pdfLink, setPdfLink] = useState("");
   const [error, setError] = useState("");
 
   async function handleDownload() {
+    const embedded = window.self !== window.top;
+    let pdfWindow: Window | null = null;
+
+    if (embedded) {
+      try {
+        pdfWindow = window.open("", "_blank");
+      } catch {
+        pdfWindow = null;
+      }
+    }
+
+    if (pdfWindow) {
+      try {
+        pdfWindow.document.title = "Preparing INOX Smart Quote";
+        pdfWindow.document.body.textContent = "Preparing your PDF quote…";
+      } catch {
+        // Some embedded browsers return a window handle without document access.
+      }
+    }
+
     setIsGenerating(true);
     setError("");
     try {
-      await generateQuotePdf(quote, mode);
+      const file = await createQuotePdfFile(quote, mode);
+
+      if (!embedded) {
+        downloadQuotePdfFile(file);
+        return;
+      }
+
+      if (pdfLink) URL.revokeObjectURL(pdfLink);
+      const nextPdfLink = URL.createObjectURL(file.blob);
+      setPdfLink(nextPdfLink);
+
+      if (pdfWindow) {
+        try {
+          pdfWindow.location.replace(nextPdfLink);
+        } catch {
+          setError(
+            "Lark blocked the new PDF tab. Use the generated PDF link below instead.",
+          );
+        }
+      } else {
+        setError(
+          "Lark blocked the new PDF tab. Use the generated PDF link below instead.",
+        );
+      }
     } catch {
+      pdfWindow?.close();
       setError("The PDF could not be generated. Please try again.");
     } finally {
       setIsGenerating(false);
@@ -85,8 +143,26 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
           <strong>{quote.plan.name}</strong>
         </div>
         <button disabled={isGenerating} onClick={handleDownload} type="button">
-          {isGenerating ? "Creating PDF…" : "Download PDF Quote"}
+          {isGenerating
+            ? "Creating PDF…"
+            : isEmbedded
+              ? "Open PDF Quote"
+              : "Download PDF Quote"}
         </button>
+        {isEmbedded && !pdfLink && !error && (
+          <p className={styles.embedNote}>
+            In Lark, the PDF opens in a separate browser tab where you can save it.
+          </p>
+        )}
+        {pdfLink && (
+          <p className={styles.pdfReady}>
+            PDF ready. If no new tab appeared, {" "}
+            <a href={pdfLink} rel="noopener noreferrer" target="_blank">
+              open the generated PDF
+            </a>
+            .
+          </p>
+        )}
         {error && <p role="alert">{error}</p>}
       </div>
     </section>
