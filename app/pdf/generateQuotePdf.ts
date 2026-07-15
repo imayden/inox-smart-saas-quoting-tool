@@ -302,6 +302,19 @@ export function buildQuotePdfDocument(
   drawLabel(doc, "Quote totals", PDF.margin, 574);
   drawTotals(doc, quote, mode);
 
+  doc.setFillColor(PDF.soft);
+  doc.setDrawColor(PDF.border);
+  doc.roundedRect(PDF.margin, 682, PDF.contentWidth, 24, 5, 5, "FD");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.2);
+  doc.setTextColor(PDF.text);
+  doc.text(
+    "FOR REFERENCE ONLY - This quote is not a formal invoice or binding offer.",
+    PDF.pageWidth / 2,
+    697,
+    { align: "center" },
+  );
+
   doc.setDrawColor(PDF.border);
   doc.line(PDF.margin, 716, PDF.pageWidth - PDF.margin, 716);
   doc.setFont("helvetica", "normal");

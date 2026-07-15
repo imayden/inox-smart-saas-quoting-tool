@@ -86,7 +86,7 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
         quoteKey,
         url: URL.createObjectURL(file.blob),
       });
-      setShowPreview(false);
+      setShowPreview(true);
     } catch {
       setError("The PDF could not be generated. Please try again.");
     } finally {
@@ -140,9 +140,12 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
               className={styles.downloadButton}
               download={currentReadyPdf.fileName}
               href={currentReadyPdf.url}
-              onClick={() => setShowPreview(true)}
+              onClick={(event) => {
+                event.preventDefault();
+                setShowPreview(true);
+              }}
             >
-              Download PDF Quote
+              Right-click to Open PDF
             </a>
             <button
               className={styles.secondaryButton}
@@ -164,18 +167,22 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
         )}
         {isEmbedded && !currentReadyPdf && !error && (
           <p className={styles.embedNote}>
-            Lark uses a two-step download: prepare the PDF, then click the download
-            link that appears here.
+            Lark blocks automatic new tabs. Prepare the PDF to preview it inside this
+            card.
           </p>
         )}
         {isEmbedded && currentReadyPdf && (
           <p className={styles.pdfReady}>
-            PDF ready. A normal left click downloads it; the same click also opens a
-            preview below if Lark blocks the download.
+            PDF ready. Use the preview below, or right-click the green link and choose
+            Open Link in New Tab.
           </p>
         )}
         {error && <p role="alert">{error}</p>}
       </div>
+      <p className={styles.disclaimer}>
+        For package configuration and pricing reference only. This quote is not a
+        formal invoice or binding offer.
+      </p>
       {isEmbedded && currentReadyPdf && showPreview && (
         <div className={styles.preview}>
           <div className={styles.previewHeader}>

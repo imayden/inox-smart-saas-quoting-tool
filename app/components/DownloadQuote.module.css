@@ -189,6 +189,20 @@
   color: rgba(255, 255, 255, 0.78);
 }
 
+.disclaimer {
+  background: var(--brand-soft);
+  border: 1px solid color-mix(in srgb, var(--brand) 42%, var(--border));
+  border-radius: 9px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  grid-column: 1 / -1;
+  line-height: 1.5;
+  margin: -10px 0 0;
+  padding: 9px 12px;
+  text-align: center;
+}
+
 .preview {
   background: var(--ink);
   border-radius: var(--radius-lg);
