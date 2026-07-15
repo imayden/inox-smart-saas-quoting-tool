@@ -11,4 +11,5 @@
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    X-Frame-Options = "SAMEORIGIN"
+    # X-Frame-Options is intentionally omitted so Lark Docs Web Cards can
+    # embed this public, browser-only quoting tool.
