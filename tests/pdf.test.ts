@@ -36,6 +36,30 @@ for (const mode of ["net", "msrp", "both"] as const satisfies readonly QuoteDisp
   });
 }
 
+for (const mode of ["net", "both"] as const satisfies readonly QuoteDisplayMode[]) {
+  test(`${mode} PDF includes the partner pricing relationship`, () => {
+    const pdf = buildQuotePdfDocument(quote, mode, {
+      generatedAt: new Date("2026-07-14T12:00:00Z"),
+    });
+
+    assert.match(
+      pdf.output(),
+      /MSRP is 2× NET\. This quote was generated from the configured INOX Smart SaaS pricing rules\./,
+    );
+  });
+}
+
+test("MSRP-only PDF does not expose NET pricing or calculation logic", () => {
+  const pdf = buildQuotePdfDocument(quote, "msrp", {
+    generatedAt: new Date("2026-07-14T12:00:00Z"),
+  });
+  const output = pdf.output();
+
+  assert.doesNotMatch(output, /\bNET\b/);
+  assert.doesNotMatch(output, /MSRP is 2×/);
+  assert.doesNotMatch(output, /configured INOX Smart SaaS pricing rules/);
+});
+
 test("creates a browser-downloadable PDF file", async () => {
   const file = await createQuotePdfFile(quote, "both");
 

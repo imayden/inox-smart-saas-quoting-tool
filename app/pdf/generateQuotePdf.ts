@@ -325,11 +325,13 @@ export function buildQuotePdfDocument(
     PDF.margin,
     733,
   );
-  doc.text(
-    `MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`,
-    PDF.margin,
-    746,
-  );
+  if (mode !== "msrp") {
+    doc.text(
+      `MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`,
+      PDF.margin,
+      746,
+    );
+  }
   doc.setFont("helvetica", "bold");
   doc.setTextColor(PDF.ink);
   doc.text(APP_CONFIG.brandName, PDF.margin, 768);
