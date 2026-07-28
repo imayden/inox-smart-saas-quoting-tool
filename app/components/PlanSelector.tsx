@@ -21,7 +21,10 @@ export function PlanSelector({
   catalog = false,
 }: PlanSelectorProps) {
   return (
-    <section className={styles.section} aria-label="Available SaaS plans">
+    <section
+      className={`${styles.section} ${catalog ? styles.catalog : ""}`}
+      aria-label="Available SaaS plans"
+    >
       {!catalog && (
         <div className={styles.headerRow}>
           <div>
@@ -47,8 +50,22 @@ export function PlanSelector({
           return (
             <li key={plan.id}>
               <article
+                aria-pressed={catalog ? selected : undefined}
                 className={`${styles.card} ${selected ? styles.selected : ""}`}
                 data-selected={selected || undefined}
+                onClick={catalog ? () => onSelect(plan.id) : undefined}
+                onKeyDown={
+                  catalog
+                    ? (event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onSelect(plan.id);
+                        }
+                      }
+                    : undefined
+                }
+                role={catalog ? "button" : undefined}
+                tabIndex={catalog ? 0 : undefined}
               >
                 <div className={styles.cardTop}>
                   <div className={styles.planIdentity}>
@@ -72,14 +89,20 @@ export function PlanSelector({
                     </p>
                   </div>
 
-                  <button
-                    aria-pressed={selected}
-                    className={styles.selectButton}
-                    onClick={() => onSelect(plan.id)}
-                    type="button"
-                  >
-                    {selected ? "Selected plan" : `Choose ${plan.name}`}
-                  </button>
+                  {catalog ? (
+                    <span className={styles.selectHint}>
+                      {selected ? "Selected plan" : "Click card to select"}
+                    </span>
+                  ) : (
+                    <button
+                      aria-pressed={selected}
+                      className={styles.selectButton}
+                      onClick={() => onSelect(plan.id)}
+                      type="button"
+                    >
+                      {selected ? "Selected plan" : `Choose ${plan.name}`}
+                    </button>
+                  )}
                 </div>
 
                 <div className={styles.capacityGroup}>
@@ -94,7 +117,7 @@ export function PlanSelector({
                   </ul>
                 </div>
 
-                <details className={styles.details}>
+                <details className={styles.details} open={catalog}>
                   <summary>
                     <span>
                       Plan details

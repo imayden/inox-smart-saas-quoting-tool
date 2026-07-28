@@ -1,26 +1,31 @@
 .page {
-  margin: 0 auto;
-  max-width: 1680px;
+  --page-gutter: clamp(20px, 4vw, 72px);
   min-height: 100vh;
-  padding: 22px clamp(20px, 3.3vw, 56px) 72px;
+  padding: 0 var(--page-gutter) 64px;
 }
 
 .topbar {
   align-items: center;
+  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
   border-bottom: 1px solid var(--border);
   display: flex;
+  height: 70px;
   justify-content: space-between;
-  min-height: 58px;
-  padding-bottom: 18px;
+  margin: 0 calc(var(--page-gutter) * -1);
+  padding: 0 var(--page-gutter);
+  position: sticky;
+  top: 0;
+  z-index: 20;
 }
 
 .brand {
   align-items: center;
   color: var(--text-muted);
   display: inline-flex;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 650;
-  gap: 18px;
+  gap: 16px;
   text-decoration: none;
 }
 
@@ -33,14 +38,14 @@
 .topbarMeta {
   align-items: center;
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .saveState,
 .version {
   border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 750;
   line-height: 1;
   padding: 8px 10px;
   white-space: nowrap;
@@ -56,47 +61,53 @@
   color: var(--text-muted);
 }
 
+.contentFrame {
+  margin: 0 auto;
+  max-width: 1600px;
+}
+
 .intro {
-  align-items: end;
-  display: flex;
-  gap: 48px;
-  justify-content: space-between;
-  padding: clamp(34px, 6vw, 78px) 0 clamp(28px, 4vw, 48px);
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  gap: 30px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+  padding: 28px 0 22px;
 }
 
 .intro h1 {
   color: var(--ink);
-  font-size: clamp(31px, 4vw, 52px);
+  font-size: clamp(32px, 3vw, 44px);
   letter-spacing: -0.052em;
   line-height: 1.04;
-  margin-top: 10px;
-  max-width: 680px;
+  margin-top: 7px;
 }
 
 .intro > p {
   color: var(--text-muted);
-  font-size: 15px;
-  line-height: 1.6;
-  max-width: 390px;
+  font-size: 13px;
+  line-height: 1.55;
+  max-width: 360px;
 }
 
 .workspace {
   align-items: start;
   display: grid;
-  gap: clamp(20px, 2.4vw, 38px);
-  grid-template-columns: minmax(260px, 0.78fr) minmax(470px, 1.55fr) minmax(270px, 0.82fr);
+  gap: clamp(18px, 1.6vw, 28px);
+  grid-template-columns: minmax(275px, 0.8fr) minmax(620px, 2.05fr) minmax(315px, 0.9fr);
+  padding-top: 24px;
 }
 
 .stickyPanel {
   position: sticky;
-  top: 20px;
+  top: 88px;
 }
 
 .configureHint {
   color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.55;
-  margin: 14px 8px 0;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 12px 7px 0;
 }
 
 .plansColumn {
@@ -105,32 +116,36 @@
 
 .sectionHeader {
   align-items: end;
-  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   display: flex;
-  gap: 24px;
+  gap: 20px;
   justify-content: space-between;
-  margin-bottom: 22px;
-  padding: 3px 0 19px;
+  margin-bottom: 14px;
+  min-height: 104px;
+  padding: 18px 20px;
 }
 
 .sectionHeader h2 {
   color: var(--ink);
-  font-size: 28px;
+  font-size: 25px;
   letter-spacing: -0.045em;
-  margin-top: 7px;
+  margin-top: 5px;
 }
 
 .sectionHeader > p {
   color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1.55;
-  max-width: 300px;
+  font-size: 11px;
+  line-height: 1.5;
+  max-width: 295px;
   text-align: right;
 }
 
-@media (max-width: 1190px) {
+@media (max-width: 1360px) {
   .workspace {
-    grid-template-columns: minmax(250px, 0.78fr) minmax(500px, 1.55fr);
+    grid-template-columns: minmax(250px, 0.78fr) minmax(540px, 1.5fr);
   }
 
   .quoteColumn {
@@ -140,17 +155,13 @@
   .quoteColumn .stickyPanel {
     align-items: start;
     display: grid;
-    gap: 22px;
+    gap: 20px;
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
     position: static;
   }
 }
 
 @media (max-width: 980px) {
-  .page {
-    padding-bottom: 48px;
-  }
-
   .workspace {
     grid-template-columns: 1fr;
   }
@@ -172,7 +183,8 @@
 
 @media (max-width: 680px) {
   .page {
-    padding: 16px 16px 40px;
+    --page-gutter: 16px;
+    padding-bottom: 36px;
   }
 
   .topbar,
@@ -183,13 +195,18 @@
   }
 
   .topbar {
-    gap: 16px;
+    height: auto;
+    min-height: 66px;
+    padding-bottom: 13px;
+    padding-top: 13px;
   }
 
   .brand {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+  }
+
+  .logo {
+    width: 152px;
   }
 
   .topbarMeta {
@@ -197,8 +214,9 @@
   }
 
   .intro {
-    gap: 16px;
-    padding: 36px 0 30px;
+    gap: 13px;
+    grid-template-columns: 1fr;
+    padding: 25px 0 20px;
   }
 
   .intro h1 {
@@ -206,7 +224,8 @@
   }
 
   .sectionHeader {
-    gap: 12px;
+    gap: 10px;
+    min-height: 0;
   }
 
   .sectionHeader > p {

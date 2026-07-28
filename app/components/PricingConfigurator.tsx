@@ -72,55 +72,57 @@ export function PricingConfigurator() {
         </div>
       </header>
 
-      <div className={styles.intro}>
-        <div>
-          <p className="section-kicker">{APP_CONFIG.eyebrow}</p>
-          <h1>Build a clear, accurate SaaS quote.</h1>
-        </div>
-        <p>
-          Enter required capacity, compare the matching plans, then export a
-          customer-ready quote when the configuration is right.
-        </p>
-      </div>
-
-      <div className={styles.workspace} id="configure">
-        <aside className={styles.configureColumn} aria-label="Capacity configuration">
-          <div className={styles.stickyPanel}>
-            <CapacityInputs
-              onChange={handleCapacityChange}
-              requirements={requirements}
-              selectedPlan={selectedPlan}
-              variant="workspace"
-            />
-            <p className={styles.configureHint}>
-              We select the lowest-cost plan that covers your entered capacity. You can
-              still choose another plan below.
-            </p>
+      <div className={styles.contentFrame}>
+        <section className={styles.intro} aria-label="Quoting tool overview">
+          <div>
+            <p className="section-kicker">{APP_CONFIG.eyebrow}</p>
+            <h1>Build an accurate SaaS quote.</h1>
           </div>
-        </aside>
-
-        <section className={styles.plansColumn} aria-label="Plan comparison">
-          <header className={styles.sectionHeader}>
-            <div>
-              <p className="section-kicker">Step 02</p>
-              <h2>Compare plans</h2>
-            </div>
-            <p>Included capacity is shown up front. Expand a plan only when you need the full feature and add-on detail.</p>
-          </header>
-          <PlanSelector
-            autoMatched={autoMatched}
-            catalog
-            onSelect={handlePlanSelect}
-            selectedPlanId={selectedPlanId}
-          />
+          <p>
+            Configure customer capacity, compare plans side by side, and download the
+            selected quote.
+          </p>
         </section>
 
-        <aside className={styles.quoteColumn} aria-label="Current quote">
-          <div className={styles.stickyPanel}>
-            <PricingBreakdown quote={quote} variant="workspace" />
-            <DownloadQuote quote={quote} variant="workspace" />
-          </div>
-        </aside>
+        <div className={styles.workspace} id="configure">
+          <aside className={styles.configureColumn} aria-label="Capacity configuration">
+            <div className={styles.stickyPanel}>
+              <CapacityInputs
+                onChange={handleCapacityChange}
+                requirements={requirements}
+                selectedPlan={selectedPlan}
+                variant="workspace"
+              />
+              <p className={styles.configureHint}>
+                The lowest-cost matching plan is selected automatically. You can select
+                another plan at any time.
+              </p>
+            </div>
+          </aside>
+
+          <section className={styles.plansColumn} aria-label="Plan comparison">
+            <header className={styles.sectionHeader}>
+              <div>
+                <p className="section-kicker">Step 02</p>
+                <h2>Compare plans</h2>
+              </div>
+              <p>Choose a plan by clicking its card. All capacity, add-on, and feature details are visible for comparison.</p>
+            </header>
+            <PlanSelector
+              autoMatched={autoMatched}
+              catalog
+              onSelect={handlePlanSelect}
+              selectedPlanId={selectedPlanId}
+            />
+          </section>
+
+          <aside className={styles.quoteColumn} aria-label="Current quote">
+            <div className={styles.stickyPanel}>
+              <PricingBreakdown quote={quote} variant="workspace" />
+              <DownloadQuote quote={quote} variant="workspace" />
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

@@ -304,6 +304,125 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.catalog .list {
+  align-items: stretch;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.catalog .card {
+  cursor: pointer;
+  height: 100%;
+}
+
+.catalog .card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 46%, transparent);
+  outline-offset: 3px;
+}
+
+.catalog .cardTop {
+  align-items: start;
+  grid-template-columns: 1fr;
+  gap: 13px;
+  padding: 18px;
+}
+
+.catalog .planTitleRow h3 {
+  font-size: 19px;
+}
+
+.catalog .priceBlock {
+  border-left: 0;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+  padding: 12px 0 0;
+}
+
+.catalog .priceBlock strong {
+  font-size: 27px;
+}
+
+.selectHint {
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  font-size: 10px;
+  font-weight: 700;
+  min-height: 25px;
+  padding-top: 9px;
+}
+
+.selected .selectHint {
+  color: var(--brand-ink);
+}
+
+.catalog .capacityGroup {
+  padding: 13px 18px 15px;
+}
+
+.catalog .capacityList {
+  gap: 5px;
+  grid-template-columns: 1fr;
+}
+
+.catalog .capacityList li {
+  align-items: baseline;
+}
+
+.catalog .capacityList strong {
+  font-size: 14px;
+}
+
+.catalog .details summary {
+  display: none;
+}
+
+.catalog .detailsBody {
+  gap: 20px;
+  grid-template-columns: 1fr;
+  padding: 17px 18px 20px;
+}
+
+.catalog .addonList,
+.catalog .featureList {
+  font-size: 11px;
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 1280px) and (min-width: 981px) {
+  .catalog .list {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog .cardTop {
+    align-items: center;
+    grid-template-columns: minmax(150px, 1fr) auto minmax(130px, auto);
+  }
+
+  .catalog .priceBlock {
+    border-left: 1px solid var(--border);
+    border-top: 0;
+    min-width: 155px;
+    padding: 0 0 0 18px;
+  }
+
+  .catalog .selectHint {
+    min-width: 0;
+  }
+
+  .catalog .capacityList {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .catalog .detailsBody {
+    grid-template-columns: minmax(190px, 0.74fr) minmax(0, 1.26fr);
+  }
+
+  .catalog .featureList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1150px) {
   .cardTop {
     grid-template-columns: minmax(150px, 1fr) auto;
