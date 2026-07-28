@@ -156,3 +156,46 @@
     grid-column: auto;
   }
 }
+
+@media (min-width: 851px) and (max-height: 820px) {
+  .sidebar {
+    padding: 8px;
+  }
+
+  .sidebar .sectionHeader {
+    gap: 0;
+    margin-bottom: 4px;
+  }
+
+  .sidebar .sectionHeader h2 {
+    font-size: 17px;
+    margin-top: 1px;
+  }
+
+  .sidebar .sectionHeader > p {
+    display: none;
+  }
+
+  .sidebar .grid {
+    gap: 2px;
+  }
+
+  .sidebar .field {
+    gap: 2px;
+    padding: 4px 7px;
+  }
+
+  .sidebar .labelRow {
+    font-size: 10px;
+  }
+
+  .sidebar .includedBadge {
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+
+  .sidebar .field input {
+    font-size: 13px;
+    height: 22px;
+  }
+}

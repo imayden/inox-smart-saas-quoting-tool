@@ -70,7 +70,6 @@ export function PricingConfigurator() {
           <div className={styles.sidebarTitle}>
             <p className={styles.eyebrow}>{APP_CONFIG.eyebrow}</p>
             <h1>Configure capacity.</h1>
-            <p>{APP_CONFIG.description}</p>
           </div>
           <div className={styles.sidebarContent}>
             <CapacityInputs
@@ -79,17 +78,15 @@ export function PricingConfigurator() {
               selectedPlan={selectedPlan}
               variant="sidebar"
             />
-            <PricingBreakdown quote={quote} variant="sidebar" />
           </div>
         </aside>
 
-        <section className={styles.workspace}>
+        <section className={styles.plansPane}>
           <header className={styles.workspaceHeader}>
             <div>
               <p className="section-kicker">Step 02</p>
               <h2>Select plans</h2>
             </div>
-            <p>Compare included capacity, add-on increments, and plan features. Select any card to override the automatic recommendation.</p>
           </header>
           <PlanSelector
             autoMatched={autoMatched}
@@ -97,18 +94,11 @@ export function PricingConfigurator() {
             onSelect={handlePlanSelect}
             selectedPlanId={selectedPlanId}
           />
-          <section className={styles.quoteSection}>
-            <div className={styles.quoteIntro}>
-              <p className="section-kicker">Step 03</p>
-              <h2>Export the selected quote</h2>
-              <p>Choose exactly what the recipient sees: NET, MSRP, or both. The Letter-size PDF retains the full capacity and pricing breakdown.</p>
-            </div>
-            <DownloadQuote quote={quote} />
-          </section>
-          <footer className={styles.footer}>
-            <span>{APP_CONFIG.brandName}</span>
-            <span>Pricing configuration and quote generation run locally in your browser.</span>
-          </footer>
+        </section>
+
+        <section className={styles.quoteDock} aria-label="Live quote controls">
+          <PricingBreakdown quote={quote} variant="dock" />
+          <DownloadQuote quote={quote} variant="dock" />
         </section>
       </div>
     </main>

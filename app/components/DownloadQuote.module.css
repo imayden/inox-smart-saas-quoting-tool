@@ -203,6 +203,65 @@
   text-align: center;
 }
 
+.dock {
+  flex: 1 1 42%;
+  gap: 16px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(210px, 1.1fr);
+  margin-top: 0;
+  padding: 18px;
+}
+
+.dock .copy > p:last-child,
+.dock .disclaimer {
+  display: none;
+}
+
+.dock .copy h2 {
+  font-size: 23px;
+}
+
+.dock .options {
+  gap: 5px;
+}
+
+.dock .options legend {
+  margin-bottom: 5px;
+}
+
+.dock .option {
+  min-height: 39px;
+  padding: 6px 8px;
+}
+
+.dock .option strong {
+  font-size: 10px;
+}
+
+.dock .option small {
+  font-size: 8px;
+}
+
+.dock .action {
+  align-content: end;
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 1 / -1;
+  padding: 12px;
+}
+
+.dock .action > div {
+  margin-right: auto;
+}
+
+.dock .action strong {
+  font-size: 17px;
+}
+
+.dock .action button,
+.dock .downloadButton {
+  min-height: 36px;
+}
+
 .preview {
   background: var(--ink);
   border-radius: var(--radius-lg);
@@ -448,6 +507,38 @@
 
   .action {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 851px) and (max-height: 820px) {
+  .dock {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .dock .copy h2 {
+    font-size: 20px;
+  }
+
+  .dock .options {
+    gap: 3px;
+  }
+
+  .dock .options legend {
+    font-size: 8px;
+  }
+
+  .dock .option {
+    min-height: 31px;
+    padding: 4px 6px;
+  }
+
+  .dock .option small {
+    display: none;
+  }
+
+  .dock .action {
+    padding: 8px;
   }
 }
 

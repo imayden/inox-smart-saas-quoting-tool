@@ -4,7 +4,7 @@ import styles from "./PricingBreakdown.module.css";
 
 interface PricingBreakdownProps {
   quote: PlanQuote;
-  variant?: "default" | "sidebar";
+  variant?: "default" | "sidebar" | "dock";
 }
 
 export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdownProps) {
@@ -12,7 +12,7 @@ export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdow
 
   return (
     <section
-      className={`${styles.section} ${variant === "sidebar" ? styles.sidebar : ""}`}
+      className={`${styles.section} ${variant === "sidebar" ? styles.sidebar : ""} ${variant === "dock" ? styles.dock : ""}`}
       aria-labelledby="pricing-heading"
     >
       <div className={styles.header}>

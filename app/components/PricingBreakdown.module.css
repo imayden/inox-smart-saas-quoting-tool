@@ -156,6 +156,87 @@
   font-size: 23px;
 }
 
+.dock {
+  display: grid;
+  flex: 1 1 58%;
+  grid-template-columns: minmax(0, 1fr) minmax(182px, 0.38fr);
+  margin-top: 0;
+}
+
+.dock .header,
+.dock .breakdown {
+  grid-column: 1;
+}
+
+.dock .header {
+  padding: 18px 22px 12px;
+}
+
+.dock .breakdown {
+  border-top: 1px solid var(--border);
+  padding: 2px 22px 12px;
+}
+
+.dock .line {
+  font-size: 11px;
+  min-height: 36px;
+  padding: 4px 0;
+}
+
+.dock .line small,
+.dock .noAddons {
+  font-size: 9px;
+}
+
+.dock .noAddons {
+  padding: 9px 0;
+}
+
+.dock .metrics {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  grid-template-columns: 1fr;
+}
+
+.dock .metric {
+  padding: 17px 20px;
+}
+
+.dock .metric + .metric {
+  border-left: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+}
+
+.dock .metric strong {
+  font-size: clamp(19px, 2vw, 26px);
+}
+
+@media (min-width: 851px) and (max-height: 820px) {
+  .dock .header {
+    padding: 12px 16px 8px;
+  }
+
+  .dock .header h2 {
+    font-size: 20px;
+  }
+
+  .dock .breakdown {
+    padding: 0 16px 8px;
+  }
+
+  .dock .line {
+    min-height: 29px;
+  }
+
+  .dock .metrics {
+    min-width: 145px;
+  }
+
+  .dock .metric {
+    padding: 12px 15px;
+  }
+}
+
 @media (max-width: 600px) {
   .header,
   .breakdown {

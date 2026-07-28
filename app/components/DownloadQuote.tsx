@@ -34,6 +34,7 @@ const MODES: readonly {
 
 interface DownloadQuoteProps {
   quote: PlanQuote;
+  variant?: "default" | "dock";
 }
 
 interface ReadyPdf {
@@ -205,7 +206,7 @@ function QuotePreview({
   );
 }
 
-export function DownloadQuote({ quote }: DownloadQuoteProps) {
+export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps) {
   const [mode, setMode] = useState<QuoteDisplayMode>("both");
   const [isGenerating, setIsGenerating] = useState(false);
   const isEmbedded = useSyncExternalStore(
@@ -260,7 +261,7 @@ export function DownloadQuote({ quote }: DownloadQuoteProps) {
   }
 
   return (
-    <section className={styles.section} aria-labelledby="download-heading">
+    <section className={`${styles.section} ${variant === "dock" ? styles.dock : ""}`} aria-labelledby="download-heading">
       <div className={styles.copy}>
         <p className="section-kicker">Step 03</p>
         <h2 id="download-heading">Download Quote</h2>
