@@ -1,5 +1,5 @@
 .section {
-  margin-top: 34px;
+  margin-top: 0;
 }
 
 .headerRow {
@@ -45,7 +45,7 @@
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  min-height: 286px;
+  min-height: 650px;
   padding: 20px;
   position: relative;
   text-align: left;
@@ -95,6 +95,13 @@
   margin-top: 7px;
 }
 
+.msrp {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+  margin-top: 4px;
+}
+
 .price small {
   color: var(--text-muted);
   font-size: 11px;
@@ -106,6 +113,17 @@
   height: 1px;
   margin: 17px 0 13px;
   width: 100%;
+}
+
+.catalogLabel,
+.featureHeading {
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.featureHeading {
+  color: var(--brand-ink);
 }
 
 .capacityList {
@@ -120,12 +138,27 @@
   min-width: 30px;
 }
 
-.addonNote {
-  color: var(--text-muted);
+.addonList,
+.featureList {
+  display: grid;
+  gap: 6px;
   font-size: 10px;
-  line-height: 1.45;
-  margin-top: auto;
-  padding-top: 16px;
+  line-height: 1.35;
+}
+
+.addonList span::before,
+.featureList span::before,
+.capacityList span::before {
+  color: var(--brand-ink);
+  content: "▸";
+  display: inline-block;
+  font-size: 8px;
+  margin-right: 5px;
+}
+
+.featureList {
+  color: var(--text-soft);
+  margin-top: 1px;
 }
 
 @media (max-width: 850px) {

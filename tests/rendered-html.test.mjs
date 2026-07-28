@@ -22,7 +22,7 @@ async function render() {
   );
 }
 
-test("server-renders the finished pricing configurator", async () => {
+test("server-renders the v3 pricing configurator", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
@@ -31,11 +31,12 @@ test("server-renders the finished pricing configurator", async () => {
   assert.match(html, /<title>INOX Smart SaaS Quoting Tool<\/title>/i);
   assert.match(html, /SaaS Quoting Tool/);
   assert.match(html, /INTERNAL USE ONLY/);
-  assert.match(html, /v2\.0 by Ayden/);
+  assert.match(html, /3\.0 preview/);
   assert.match(html, /src="\/brand\/inox-smart-logo-light\.png"/);
   assert.doesNotMatch(html, /_next\/image[^>]*inox-smart-logo-light/);
   assert.match(html, /Capacity needed/);
-  assert.match(html, /Choose a plan/);
+  assert.match(html, /Select plans/);
+  assert.match(html, /Included features/);
   assert.match(html, /Download Quote/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });

@@ -54,9 +54,8 @@ export function PricingConfigurator() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.topBar} />
       <div className={styles.shell}>
-        <header className={styles.hero}>
+        <aside className={styles.sidebar}>
           <div className={styles.brandRow}>
             <img
               alt="INOX Smart"
@@ -66,50 +65,51 @@ export function PricingConfigurator() {
               src="/brand/inox-smart-logo-light.png"
               width="279"
             />
-            <span className={styles.version}>{APP_CONFIG.versionLabel}</span>
+            <span className={styles.version}>3.0 preview</span>
           </div>
-          <div className={styles.heroGrid}>
-            <div>
-              <p className={styles.eyebrow}>{APP_CONFIG.eyebrow}</p>
-              <h1>{APP_CONFIG.productName}</h1>
-            </div>
-            <p className={styles.description}>{APP_CONFIG.description}</p>
+          <div className={styles.sidebarTitle}>
+            <p className={styles.eyebrow}>{APP_CONFIG.eyebrow}</p>
+            <h1>Configure capacity.</h1>
+            <p>{APP_CONFIG.description}</p>
           </div>
-          <div className={styles.logicStrip}>
-            <span>
-              <b>Exact pricing logic</b>
-              Plan base + whole add-on bundles
-            </span>
-            <span>
-              <b>Automatic matching</b>
-              Lowest monthly NET wins
-            </span>
-            <span>
-              <b>PDF ready</b>
-              NET, MSRP, or both
-            </span>
+          <div className={styles.sidebarContent}>
+            <CapacityInputs
+              onChange={handleCapacityChange}
+              requirements={requirements}
+              selectedPlan={selectedPlan}
+              variant="sidebar"
+            />
+            <PricingBreakdown quote={quote} variant="sidebar" />
           </div>
-        </header>
+        </aside>
 
-        <div className={styles.content}>
-          <CapacityInputs
-            onChange={handleCapacityChange}
-            requirements={requirements}
-            selectedPlan={selectedPlan}
-          />
+        <section className={styles.workspace}>
+          <header className={styles.workspaceHeader}>
+            <div>
+              <p className="section-kicker">Step 02</p>
+              <h2>Select plans</h2>
+            </div>
+            <p>Compare included capacity, add-on increments, and plan features. Select any card to override the automatic recommendation.</p>
+          </header>
           <PlanSelector
             autoMatched={autoMatched}
+            catalog
             onSelect={handlePlanSelect}
             selectedPlanId={selectedPlanId}
           />
-          <PricingBreakdown quote={quote} />
-          <DownloadQuote quote={quote} />
-        </div>
-
-        <footer className={styles.footer}>
-          <span>{APP_CONFIG.brandName}</span>
-          <span>Pricing configuration and quote generation run locally in your browser.</span>
-        </footer>
+          <section className={styles.quoteSection}>
+            <div className={styles.quoteIntro}>
+              <p className="section-kicker">Step 03</p>
+              <h2>Export the selected quote</h2>
+              <p>Choose exactly what the recipient sees: NET, MSRP, or both. The Letter-size PDF retains the full capacity and pricing breakdown.</p>
+            </div>
+            <DownloadQuote quote={quote} />
+          </section>
+          <footer className={styles.footer}>
+            <span>{APP_CONFIG.brandName}</span>
+            <span>Pricing configuration and quote generation run locally in your browser.</span>
+          </footer>
+        </section>
       </div>
     </main>
   );

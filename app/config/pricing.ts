@@ -31,6 +31,40 @@ export interface PricingPlan {
   addonStep: CapacityValues;
 }
 
+/** Plan feature copy shown in the v3 plan catalog. */
+export const PLAN_FEATURES: Readonly<Record<string, readonly string[]>> = {
+  elite: [
+    "Batch Enrollment / Move-In",
+    "Batch Setup Import",
+    "User Access Scheduling",
+    "Passage & Privacy Modes",
+    "Passage & Privacy Mode Scheduling",
+    "Door Propped Open Alert",
+    "Customizable User Permissions",
+    "Advanced Filters",
+    "Unlimited Data Export",
+    "100,000 Audit Trail per device",
+    "Activity Notifications",
+    "Elite Dashboard",
+    "Free Smart Mobile App",
+  ],
+  professional: [
+    "Everything in Elite Plan PLUS:",
+    "Lock Down",
+    "Lost / Stolen Cards",
+    "Same-Day Multi-Schedule Passage & Privacy Mode",
+    "API Integration Capabilities (additional costs may apply)",
+    "Professional Dashboard",
+  ],
+  enterprise: [
+    "Everything in Pro Plan PLUS:",
+    "Custom Branding",
+    "Move-In / Move-Out Calendar",
+    "Enterprise Dashboard",
+    "And more coming soon...",
+  ],
+};
+
 export const APP_CONFIG = {
   brandName: "INOX Smart",
   productName: "SaaS Quoting Tool",

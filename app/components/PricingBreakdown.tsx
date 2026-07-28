@@ -4,13 +4,17 @@ import styles from "./PricingBreakdown.module.css";
 
 interface PricingBreakdownProps {
   quote: PlanQuote;
+  variant?: "default" | "sidebar";
 }
 
-export function PricingBreakdown({ quote }: PricingBreakdownProps) {
+export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdownProps) {
   const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
 
   return (
-    <section className={styles.section} aria-labelledby="pricing-heading">
+    <section
+      className={`${styles.section} ${variant === "sidebar" ? styles.sidebar : ""}`}
+      aria-labelledby="pricing-heading"
+    >
       <div className={styles.header}>
         <div>
           <p className="section-kicker">Live quote</p>

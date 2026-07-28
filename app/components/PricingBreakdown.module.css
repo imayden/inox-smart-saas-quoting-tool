@@ -121,6 +121,41 @@
   font-size: 11px;
 }
 
+.sidebar {
+  box-shadow: none;
+  margin-top: 18px;
+}
+
+.sidebar .header {
+  padding: 19px 20px 14px;
+}
+
+.sidebar .breakdown {
+  padding: 8px 20px 14px;
+}
+
+.sidebar .line {
+  font-size: 12px;
+  min-height: 46px;
+}
+
+.sidebar .line small {
+  font-size: 10px;
+}
+
+.sidebar .noAddons {
+  font-size: 11px;
+  padding: 14px 0;
+}
+
+.sidebar .metric {
+  padding: 17px 20px;
+}
+
+.sidebar .metric strong {
+  font-size: 23px;
+}
+
 @media (max-width: 600px) {
   .header,
   .breakdown {

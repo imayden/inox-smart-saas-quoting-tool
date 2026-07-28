@@ -97,6 +97,42 @@
   margin: 0;
 }
 
+.sidebar {
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  padding: 20px;
+}
+
+.sidebar .sectionHeader {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.sidebar .sectionHeader > p {
+  font-size: 11px;
+  max-width: none;
+  text-align: left;
+}
+
+.sidebar .grid {
+  grid-template-columns: 1fr;
+}
+
+.sidebar .field {
+  gap: 8px;
+  padding: 12px;
+}
+
+.sidebar .field:last-child {
+  grid-column: auto;
+}
+
+.sidebar .field input {
+  height: 42px;
+}
+
 @media (max-width: 700px) {
   .section {
     padding: 20px;

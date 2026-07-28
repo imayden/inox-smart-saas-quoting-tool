@@ -6,15 +6,20 @@ interface CapacityInputsProps {
   requirements: CapacityRequirements;
   selectedPlan: PricingPlan;
   onChange: (key: keyof CapacityRequirements, value: string) => void;
+  variant?: "default" | "sidebar";
 }
 
 export function CapacityInputs({
   requirements,
   selectedPlan,
   onChange,
+  variant = "default",
 }: CapacityInputsProps) {
   return (
-    <section className={styles.section} aria-labelledby="capacity-heading">
+    <section
+      className={`${styles.section} ${variant === "sidebar" ? styles.sidebar : ""}`}
+      aria-labelledby="capacity-heading"
+    >
       <div className={styles.sectionHeader}>
         <div>
           <p className="section-kicker">Step 01</p>
