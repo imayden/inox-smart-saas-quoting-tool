@@ -54,46 +54,58 @@ export function PricingConfigurator() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.shell}>
-        <aside className={styles.sidebar}>
-          <div className={styles.brandRow}>
-            <img
-              alt="INOX Smart"
-              className={styles.logo}
-              height="37"
-              loading="eager"
-              src="/brand/inox-smart-logo-light.png"
-              width="279"
-            />
-            <span className={styles.version}>3.0 preview</span>
-          </div>
-          <div className={styles.sidebarTitle}>
-            <p className={styles.eyebrow}>{APP_CONFIG.eyebrow}</p>
-            <h1>Configure capacity.</h1>
-          </div>
-          <div className={styles.sidebarContent}>
+      <header className={styles.topbar}>
+        <a aria-label="INOX Smart SaaS quoting tool" className={styles.brand} href="#configure">
+          <img
+            alt="INOX Smart"
+            className={styles.logo}
+            height="37"
+            loading="eager"
+            src="/brand/inox-smart-logo-dark.png"
+            width="279"
+          />
+          <span>SaaS quoting workspace</span>
+        </a>
+        <div className={styles.topbarMeta}>
+          <span className={styles.saveState}>Pricing rules loaded</span>
+          <span className={styles.version}>v3.0 preview</span>
+        </div>
+      </header>
+
+      <div className={styles.intro}>
+        <div>
+          <p className="section-kicker">{APP_CONFIG.eyebrow}</p>
+          <h1>Build a clear, accurate SaaS quote.</h1>
+        </div>
+        <p>
+          Enter required capacity, compare the matching plans, then export a
+          customer-ready quote when the configuration is right.
+        </p>
+      </div>
+
+      <div className={styles.workspace} id="configure">
+        <aside className={styles.configureColumn} aria-label="Capacity configuration">
+          <div className={styles.stickyPanel}>
             <CapacityInputs
               onChange={handleCapacityChange}
               requirements={requirements}
               selectedPlan={selectedPlan}
-              variant="sidebar"
+              variant="workspace"
             />
-            <p className={styles.sidebarHint}>
-              The lowest-priced matching plan is selected automatically. You can still
-              choose another plan on the right.
+            <p className={styles.configureHint}>
+              We select the lowest-cost plan that covers your entered capacity. You can
+              still choose another plan below.
             </p>
           </div>
         </aside>
 
-        <section className={styles.plansPane}>
-          <header className={styles.workspaceHeader}>
+        <section className={styles.plansColumn} aria-label="Plan comparison">
+          <header className={styles.sectionHeader}>
             <div>
               <p className="section-kicker">Step 02</p>
-              <h2>Select plans</h2>
-              <p className={styles.workspaceHint}>
-                Compare capacity, add-on increments, and included functionality.
-              </p>
+              <h2>Compare plans</h2>
             </div>
+            <p>Included capacity is shown up front. Expand a plan only when you need the full feature and add-on detail.</p>
           </header>
           <PlanSelector
             autoMatched={autoMatched}
@@ -103,10 +115,12 @@ export function PricingConfigurator() {
           />
         </section>
 
-        <section className={styles.quoteDock} aria-label="Live quote controls">
-          <PricingBreakdown quote={quote} variant="dock" />
-          <DownloadQuote quote={quote} variant="dock" />
-        </section>
+        <aside className={styles.quoteColumn} aria-label="Current quote">
+          <div className={styles.stickyPanel}>
+            <PricingBreakdown quote={quote} variant="workspace" />
+            <DownloadQuote quote={quote} variant="workspace" />
+          </div>
+        </aside>
       </div>
     </main>
   );

@@ -34,7 +34,7 @@ const MODES: readonly {
 
 interface DownloadQuoteProps {
   quote: PlanQuote;
-  variant?: "default" | "dock";
+  variant?: "default" | "dock" | "workspace";
 }
 
 interface ReadyPdf {
@@ -261,7 +261,10 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
   }
 
   return (
-    <section className={`${styles.section} ${variant === "dock" ? styles.dock : ""}`} aria-labelledby="download-heading">
+    <section
+      className={`${styles.section} ${variant === "dock" ? styles.dock : ""} ${variant === "workspace" ? styles.workspace : ""}`}
+      aria-labelledby="download-heading"
+    >
       <div className={styles.copy}>
         <p className="section-kicker">Step 03</p>
         <h2 id="download-heading">Download Quote</h2>

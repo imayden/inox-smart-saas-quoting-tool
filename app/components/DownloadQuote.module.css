@@ -262,6 +262,61 @@
   min-height: 36px;
 }
 
+.workspace {
+  box-shadow: var(--shadow-sm);
+  gap: 16px;
+  grid-template-columns: 1fr;
+  margin-top: 18px;
+  padding: 20px;
+}
+
+.workspace::before {
+  height: 4px;
+}
+
+.workspace .copy h2 {
+  font-size: 21px;
+  margin-top: 4px;
+}
+
+.workspace .copy > p:last-child {
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.workspace .options {
+  gap: 7px;
+}
+
+.workspace .option {
+  min-height: 48px;
+  padding: 8px 10px;
+}
+
+.workspace .option strong {
+  font-size: 11px;
+}
+
+.workspace .option small {
+  font-size: 9px;
+}
+
+.workspace .action {
+  gap: 13px;
+  padding: 16px;
+}
+
+.workspace .action strong {
+  font-size: 20px;
+}
+
+.workspace .disclaimer {
+  font-size: 9px;
+  grid-column: auto;
+  margin: 0;
+  padding: 8px 10px;
+}
+
 .preview {
   background: var(--ink);
   border-radius: var(--radius-lg);

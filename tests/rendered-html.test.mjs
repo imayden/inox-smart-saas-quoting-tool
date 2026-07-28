@@ -29,14 +29,14 @@ test("server-renders the v3 pricing configurator", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>INOX Smart SaaS Quoting Tool<\/title>/i);
-  assert.match(html, /SaaS Quoting Tool/);
+  assert.match(html, /SaaS quoting workspace/);
   assert.match(html, /INTERNAL USE ONLY/);
   assert.match(html, /3\.0 preview/);
-  assert.match(html, /src="\/brand\/inox-smart-logo-light\.png"/);
-  assert.doesNotMatch(html, /_next\/image[^>]*inox-smart-logo-light/);
+  assert.match(html, /src="\/brand\/inox-smart-logo-dark\.png"/);
+  assert.doesNotMatch(html, /_next\/image[^>]*inox-smart-logo-dark/);
   assert.match(html, /Capacity needed/);
-  assert.match(html, /Select plans/);
-  assert.match(html, /Included features/);
+  assert.match(html, /Compare plans/);
+  assert.match(html, /Plan details/);
   assert.match(html, /Download Quote/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });

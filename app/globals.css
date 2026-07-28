@@ -38,6 +38,7 @@ html {
   background: var(--background);
   color-scheme: light;
   scroll-behavior: smooth;
+  scroll-padding-top: 24px;
 }
 
 body {
@@ -51,6 +52,21 @@ body {
 button,
 input {
   font: inherit;
+}
+
+button,
+input,
+summary,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible,
+summary:focus-visible,
+a:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--brand) 52%, transparent);
+  outline-offset: 3px;
 }
 
 h1,

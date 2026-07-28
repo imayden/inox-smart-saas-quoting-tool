@@ -9,25 +9,26 @@
 .sectionHeader {
   align-items: flex-end;
   display: flex;
-  justify-content: space-between;
   gap: 28px;
+  justify-content: space-between;
   margin-bottom: 20px;
 }
 
 .sectionHeader h2 {
-  margin-top: 4px;
+  margin-top: 5px;
 }
 
 .sectionHeader > p {
   color: var(--text-muted);
   font-size: 13px;
-  max-width: 320px;
+  line-height: 1.5;
+  max-width: 300px;
   text-align: right;
 }
 
 .grid {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -37,8 +38,8 @@
   border-radius: var(--radius-lg);
   display: grid;
   gap: 10px;
-  padding: 15px;
-  transition: border-color 160ms ease, background 160ms ease;
+  padding: 14px;
+  transition: background 160ms ease, border-color 160ms ease;
 }
 
 .field:last-child {
@@ -54,9 +55,9 @@
   align-items: center;
   display: flex;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 720;
+  gap: 8px;
   justify-content: space-between;
-  gap: 12px;
 }
 
 .includedBadge {
@@ -64,9 +65,9 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   color: var(--text-muted);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 650;
-  padding: 4px 9px;
+  padding: 4px 8px;
   white-space: nowrap;
 }
 
@@ -81,14 +82,14 @@
   font-weight: 650;
   height: 44px;
   outline: none;
-  padding: 0 13px;
+  padding: 0 12px;
   transition: border-color 160ms ease, box-shadow 160ms ease;
   width: 100%;
 }
 
 .field input:focus {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 24%, transparent);
 }
 
 .field input::-webkit-inner-spin-button,
@@ -97,44 +98,42 @@
   margin: 0;
 }
 
-.sidebar {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: none;
-  padding: 20px;
+.workspace {
+  padding: 21px;
 }
 
-.sidebar .sectionHeader {
+.workspace .sectionHeader {
   align-items: flex-start;
   flex-direction: column;
-  gap: 7px;
-  margin-bottom: 16px;
+  gap: 8px;
+  margin-bottom: 17px;
 }
 
-.sidebar .sectionHeader > p {
-  font-size: 11px;
+.workspace .sectionHeader > p {
+  font-size: 12px;
   max-width: none;
   text-align: left;
 }
 
-.sidebar .grid {
+.workspace .grid {
   grid-template-columns: 1fr;
 }
 
-.sidebar .field {
-  color: var(--text);
-  gap: 8px;
-  padding: 12px;
-}
-
-.sidebar .labelRow {
-  color: var(--text);
-}
-
-.sidebar .field:last-child {
+.workspace .field,
+.workspace .field:last-child {
   grid-column: auto;
 }
 
-.sidebar .field input {
+.workspace .field {
+  gap: 8px;
+  padding: 11px;
+}
+
+.workspace .labelRow {
+  font-size: 12px;
+}
+
+.workspace .field input {
   height: 42px;
 }
 
@@ -159,48 +158,5 @@
 
   .field:last-child {
     grid-column: auto;
-  }
-}
-
-@media (min-width: 851px) and (max-height: 820px) {
-  .sidebar {
-    padding: 8px;
-  }
-
-  .sidebar .sectionHeader {
-    gap: 0;
-    margin-bottom: 4px;
-  }
-
-  .sidebar .sectionHeader h2 {
-    font-size: 17px;
-    margin-top: 1px;
-  }
-
-  .sidebar .sectionHeader > p {
-    display: none;
-  }
-
-  .sidebar .grid {
-    gap: 2px;
-  }
-
-  .sidebar .field {
-    gap: 2px;
-    padding: 4px 7px;
-  }
-
-  .sidebar .labelRow {
-    font-size: 10px;
-  }
-
-  .sidebar .includedBadge {
-    font-size: 8px;
-    padding: 3px 6px;
-  }
-
-  .sidebar .field input {
-    font-size: 13px;
-    height: 22px;
   }
 }
