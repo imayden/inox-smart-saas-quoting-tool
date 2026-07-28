@@ -28,7 +28,7 @@ test("server-renders the protected root access notice", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>INOX Smart SaaS Quoting Tool<\/title>/i);
+  assert.match(html, /<title>Contact Admin - INOX Smart SaaS Quoting Workspace<\/title>/i);
   assert.match(html, /Workspace access required/);
   assert.match(html, /inoxsmartadmin@unisonhardware\.com/);
   assert.doesNotMatch(html, /Capacity needed/);
@@ -39,6 +39,7 @@ test("server-renders pricing workspaces with their fixed visibility", async () =
   const net = await render("/16E5/NET-pricing");
   const netHtml = await net.text();
   assert.equal(net.status, 200);
+  assert.match(netHtml, /<title>NET - INOX Smart SaaS Quoting Workspace<\/title>/i);
   assert.match(netHtml, /SaaS Quoting Workspace/);
   assert.match(netHtml, /Download NET PDF Quote/);
   assert.doesNotMatch(netHtml, /Monthly MSRP/);
@@ -46,6 +47,7 @@ test("server-renders pricing workspaces with their fixed visibility", async () =
   const msrp = await render("/22625/MSRP-pricing");
   const msrpHtml = await msrp.text();
   assert.equal(msrp.status, 200);
+  assert.match(msrpHtml, /<title>MSRP - INOX Smart SaaS Quoting Workspace<\/title>/i);
   assert.match(msrpHtml, /Download MSRP PDF Quote/);
   assert.match(msrpHtml, /Monthly MSRP/);
   assert.doesNotMatch(msrpHtml, /Monthly NET/);
@@ -53,6 +55,7 @@ test("server-renders pricing workspaces with their fixed visibility", async () =
   const both = await render("/16E522625/MSRP_w_NET");
   const bothHtml = await both.text();
   assert.equal(both.status, 200);
+  assert.match(bothHtml, /<title>MSRP &amp; NET - INOX Smart SaaS Quoting Workspace<\/title>/i);
   assert.match(bothHtml, /Download NET \+ MSRP PDF Quote/);
   assert.match(bothHtml, /Monthly NET/);
   assert.match(bothHtml, /Monthly MSRP/);
