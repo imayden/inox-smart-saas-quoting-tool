@@ -6,12 +6,14 @@ import {
 } from "@/app/config/pricing";
 import { formatCurrency } from "@/app/lib/pricing";
 import styles from "./PlanSelector.module.css";
+import type { QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
 
 interface PlanSelectorProps {
   selectedPlanId: string;
   autoMatched: boolean;
   onSelect: (planId: string) => void;
   catalog?: boolean;
+  pricingMode?: QuoteDisplayMode;
 }
 
 export function PlanSelector({
@@ -19,7 +21,11 @@ export function PlanSelector({
   autoMatched,
   onSelect,
   catalog = false,
+  pricingMode = "both",
 }: PlanSelectorProps) {
+  const isNetOnly = pricingMode === "net";
+  const isMsrpOnly = pricingMode === "msrp";
+
   return (
     <section
       className={`${styles.section} ${catalog ? styles.catalog : ""}`}
@@ -82,11 +88,19 @@ export function PlanSelector({
 
                   <div className={styles.priceBlock}>
                     <span>Starting at</span>
-                    <strong>{formatCurrency(plan.monthlyNet)}</strong>
-                    <small>NET / month</small>
-                    <p>
-                      MSRP {formatCurrency(plan.monthlyNet * APP_CONFIG.msrpMultiplier)} / month
-                    </p>
+                    <strong>
+                      {formatCurrency(
+                        isMsrpOnly
+                          ? plan.monthlyNet * APP_CONFIG.msrpMultiplier
+                          : plan.monthlyNet,
+                      )}
+                    </strong>
+                    <small>{isMsrpOnly ? "MSRP / month" : "NET / month"}</small>
+                    {!isNetOnly && !isMsrpOnly && (
+                      <p>
+                        MSRP {formatCurrency(plan.monthlyNet * APP_CONFIG.msrpMultiplier)} / month
+                      </p>
+                    )}
                   </div>
 
                   {catalog ? (
@@ -129,7 +143,15 @@ export function PlanSelector({
                     <section aria-label={`${plan.name} add-on rules`}>
                       <h4>Add-on increments</h4>
                       <p className={styles.addonIntro}>
-                        {formatCurrency(APP_CONFIG.addonNetPrice)} NET per add-on, per month
+                        {isMsrpOnly
+                          ? `${formatCurrency(
+                              APP_CONFIG.addonNetPrice * APP_CONFIG.msrpMultiplier,
+                            )} MSRP per add-on, per month`
+                          : isNetOnly
+                            ? `${formatCurrency(APP_CONFIG.addonNetPrice)} NET per add-on, per month`
+                            : `${formatCurrency(APP_CONFIG.addonNetPrice)} NET / ${formatCurrency(
+                                APP_CONFIG.addonNetPrice * APP_CONFIG.msrpMultiplier,
+                              )} MSRP per add-on, per month`}
                       </p>
                       <ul className={styles.addonList}>
                         {CAPACITIES.map((capacity) => (

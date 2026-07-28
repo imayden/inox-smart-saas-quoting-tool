@@ -1,5 +1,5 @@
-import { PricingConfigurator } from "./components/PricingConfigurator";
+import { WorkspaceAccessNotice } from "./components/WorkspaceAccessNotice";
 
 export default function Home() {
-  return <PricingConfigurator />;
+  return <WorkspaceAccessNotice />;
 }

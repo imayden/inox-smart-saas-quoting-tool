@@ -35,6 +35,7 @@ const MODES: readonly {
 interface DownloadQuoteProps {
   quote: PlanQuote;
   variant?: "default" | "dock" | "workspace";
+  fixedMode?: QuoteDisplayMode;
 }
 
 interface ReadyPdf {
@@ -206,8 +207,19 @@ function QuotePreview({
   );
 }
 
-export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps) {
+function downloadButtonLabel(mode: QuoteDisplayMode) {
+  if (mode === "net") return "Download NET PDF Quote";
+  if (mode === "msrp") return "Download MSRP PDF Quote";
+  return "Download NET + MSRP PDF Quote";
+}
+
+export function DownloadQuote({
+  quote,
+  variant = "default",
+  fixedMode,
+}: DownloadQuoteProps) {
   const [mode, setMode] = useState<QuoteDisplayMode>("both");
+  const selectedMode = fixedMode ?? mode;
   const [isGenerating, setIsGenerating] = useState(false);
   const isEmbedded = useSyncExternalStore(
     subscribeToEmbeddingState,
@@ -217,7 +229,7 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
   const [readyPdf, setReadyPdf] = useState<ReadyPdf | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState("");
-  const quoteKey = `${mode}:${quote.plan.id}:${quote.lines
+  const quoteKey = `${selectedMode}:${quote.plan.id}:${quote.lines
     .map((line) => line.required)
     .join(",")}`;
   const currentReadyPdf = readyPdf?.quoteKey === quoteKey ? readyPdf : null;
@@ -235,7 +247,7 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
     setIsGenerating(true);
     setError("");
     try {
-      const file = await createQuotePdfFile(quote, mode);
+      const file = await createQuotePdfFile(quote, selectedMode);
 
       if (!embedded) {
         downloadQuotePdfFile(file);
@@ -274,12 +286,12 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
         </p>
       </div>
 
-      <fieldset className={styles.options}>
+      {!fixedMode && <fieldset className={styles.options}>
         <legend>Choose pricing visibility</legend>
         {MODES.map((option) => (
           <label className={styles.option} key={option.value}>
             <input
-              checked={mode === option.value}
+              checked={selectedMode === option.value}
               name="quote-display-mode"
               onChange={() => {
                 setMode(option.value);
@@ -296,7 +308,7 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
             </span>
           </label>
         ))}
-      </fieldset>
+      </fieldset>}
 
       <div className={styles.action}>
         <div>
@@ -331,7 +343,7 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
               ? "Creating PDF…"
               : isEmbedded
                 ? "Prepare PDF Quote"
-                : "Download PDF Quote"}
+              : downloadButtonLabel(selectedMode)}
           </button>
         )}
         {isEmbedded && !currentReadyPdf && !error && (
@@ -363,7 +375,7 @@ export function DownloadQuote({ quote, variant = "default" }: DownloadQuoteProps
               Close preview
             </button>
           </div>
-          <QuotePreview file={currentReadyPdf} mode={mode} quote={quote} />
+          <QuotePreview file={currentReadyPdf} mode={selectedMode} quote={quote} />
         </div>
       )}
     </section>

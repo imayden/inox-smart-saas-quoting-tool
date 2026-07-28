@@ -1,14 +1,30 @@
 import { APP_CONFIG } from "@/app/config/pricing";
 import { formatCurrency, type PlanQuote } from "@/app/lib/pricing";
 import styles from "./PricingBreakdown.module.css";
+import type { QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
 
 interface PricingBreakdownProps {
   quote: PlanQuote;
   variant?: "default" | "sidebar" | "dock" | "workspace";
+  mode?: QuoteDisplayMode;
 }
 
-export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdownProps) {
+function formatPrice(net: number, mode: QuoteDisplayMode) {
+  if (mode === "net") return `${formatCurrency(net)} NET`;
+  if (mode === "msrp") {
+    return `${formatCurrency(net * APP_CONFIG.msrpMultiplier)} MSRP`;
+  }
+  return `${formatCurrency(net)} NET / ${formatCurrency(net * APP_CONFIG.msrpMultiplier)} MSRP`;
+}
+
+export function PricingBreakdown({
+  quote,
+  variant = "default",
+  mode = "both",
+}: PricingBreakdownProps) {
   const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
+  const showNet = mode !== "msrp";
+  const showMsrp = mode !== "net";
 
   return (
     <section
@@ -29,7 +45,7 @@ export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdow
             <strong>{quote.plan.name}</strong>
             <small>Base monthly plan</small>
           </span>
-          <b>{formatCurrency(quote.plan.monthlyNet)} NET</b>
+          <b>{formatPrice(quote.plan.monthlyNet, mode)}</b>
         </div>
 
         {activeAddons.length === 0 ? (
@@ -41,34 +57,38 @@ export function PricingBreakdown({ quote, variant = "default" }: PricingBreakdow
                 <strong>{line.label}</strong>
                 <small>
                   +{line.addonUnits} capacity · {line.addonCount} add-on
-                  {line.addonCount === 1 ? "" : "s"} × {formatCurrency(APP_CONFIG.addonNetPrice)}
+                  {line.addonCount === 1 ? "" : "s"} × {formatPrice(APP_CONFIG.addonNetPrice, mode)}
                 </small>
               </span>
-              <b>{formatCurrency(line.addonNetCost)}</b>
+              <b>{formatPrice(line.addonNetCost, mode)}</b>
             </div>
           ))
         )}
 
-        <div className={`${styles.line} ${styles.subtotal}`}>
-          <span>Monthly NET</span>
-          <b>{formatCurrency(quote.monthlyNet)}</b>
-        </div>
-        <div className={`${styles.line} ${styles.msrpLine}`}>
-          <span>Monthly MSRP</span>
-          <b>{formatCurrency(quote.monthlyMsrp)}</b>
-        </div>
+        {showNet && (
+          <div className={`${styles.line} ${styles.subtotal}`}>
+            <span>Monthly NET</span>
+            <b>{formatCurrency(quote.monthlyNet)}</b>
+          </div>
+        )}
+        {showMsrp && (
+          <div className={`${styles.line} ${showNet ? styles.msrpLine : styles.subtotal}`}>
+            <span>Monthly MSRP</span>
+            <b>{formatCurrency(quote.monthlyMsrp)}</b>
+          </div>
+        )}
       </div>
 
       <div className={styles.metrics}>
         <div className={styles.metric}>
-          <span>Monthly NET</span>
-          <strong>{formatCurrency(quote.monthlyNet)}</strong>
-          <small>MSRP {formatCurrency(quote.monthlyMsrp)}</small>
+          <span>{showNet ? "Monthly NET" : "Monthly MSRP"}</span>
+          <strong>{formatCurrency(showNet ? quote.monthlyNet : quote.monthlyMsrp)}</strong>
+          {mode === "both" && <small>MSRP {formatCurrency(quote.monthlyMsrp)}</small>}
         </div>
         <div className={styles.metric}>
-          <span>Yearly NET</span>
-          <strong>{formatCurrency(quote.yearlyNet)}</strong>
-          <small>MSRP {formatCurrency(quote.yearlyMsrp)}</small>
+          <span>{showNet ? "Yearly NET" : "Yearly MSRP"}</span>
+          <strong>{formatCurrency(showNet ? quote.yearlyNet : quote.yearlyMsrp)}</strong>
+          {mode === "both" && <small>MSRP {formatCurrency(quote.yearlyMsrp)}</small>}
         </div>
       </div>
     </section>

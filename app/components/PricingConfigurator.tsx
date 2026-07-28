@@ -17,8 +17,13 @@ import { DownloadQuote } from "./DownloadQuote";
 import { PlanSelector } from "./PlanSelector";
 import { PricingBreakdown } from "./PricingBreakdown";
 import styles from "./PricingConfigurator.module.css";
+import type { QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
 
-export function PricingConfigurator() {
+interface PricingConfiguratorProps {
+  pricingMode: QuoteDisplayMode;
+}
+
+export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
   const [requirements, setRequirements] = useState<CapacityRequirements>(
     createEmptyRequirements,
   );
@@ -112,14 +117,15 @@ export function PricingConfigurator() {
               autoMatched={autoMatched}
               catalog
               onSelect={handlePlanSelect}
+              pricingMode={pricingMode}
               selectedPlanId={selectedPlanId}
             />
           </section>
 
           <aside className={styles.quoteColumn} aria-label="Current quote">
             <div className={styles.stickyPanel}>
-              <PricingBreakdown quote={quote} variant="workspace" />
-              <DownloadQuote quote={quote} variant="workspace" />
+              <PricingBreakdown mode={pricingMode} quote={quote} variant="workspace" />
+              <DownloadQuote fixedMode={pricingMode} quote={quote} variant="workspace" />
             </div>
           </aside>
         </div>
