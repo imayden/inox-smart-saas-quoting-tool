@@ -111,7 +111,8 @@ export const PRICING_PLANS: readonly PricingPlan[] = [
   {
     id: "enterprise",
     name: "Enterprise",
-    monthlyNet: 299.99,
+    // NET V20260629: $249.99/month; corresponding MSRP is $499.98/month.
+    monthlyNet: 249.99,
     included: {
       devices: 100,
       mobile: 100,

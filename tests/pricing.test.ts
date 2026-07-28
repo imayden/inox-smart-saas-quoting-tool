@@ -23,6 +23,14 @@ test("blank requirements preserve the original Elite base price", () => {
   assert.equal(quote.yearlyMsrp, 1199.76);
 });
 
+test("Enterprise base price matches the NET/MSRP V20260629 price sheets", () => {
+  const quote = calculatePlanQuote(createEmptyRequirements(), PRICING_PLANS[2]);
+  assert.equal(quote.monthlyNet, 249.99);
+  assert.equal(quote.monthlyMsrp, 499.98);
+  assert.equal(quote.yearlyNet, 2999.88);
+  assert.equal(quote.yearlyMsrp, 5999.76);
+});
+
 test("add-ons round up by whole bundle and cost $5 NET each", () => {
   const quote = calculatePlanQuote(requirements({ devices: 6 }), PRICING_PLANS[0]);
   const devices = quote.lines.find((line) => line.key === "devices");
