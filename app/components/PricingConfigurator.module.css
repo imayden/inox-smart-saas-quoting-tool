@@ -210,6 +210,7 @@
   }
 
   .topbarMeta {
+    flex-wrap: wrap;
     width: 100%;
   }
 
@@ -230,5 +231,47 @@
 
   .sectionHeader > p {
     text-align: left;
+  }
+}
+
+@media (max-width: 440px) {
+  .page {
+    --page-gutter: 12px;
+  }
+
+  .topbar {
+    gap: 10px;
+    min-height: 0;
+  }
+
+  .brand {
+    font-size: 11px;
+  }
+
+  .logo {
+    width: 142px;
+  }
+
+  .saveState,
+  .version {
+    font-size: 9px;
+    padding: 7px 8px;
+  }
+
+  .intro {
+    padding-top: 20px;
+  }
+
+  .intro h1 {
+    font-size: 30px;
+  }
+
+  .workspace {
+    padding-top: 18px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 12px;
+    padding: 16px;
   }
 }

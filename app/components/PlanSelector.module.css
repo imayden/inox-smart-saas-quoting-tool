@@ -437,6 +437,23 @@
   }
 }
 
+@media (max-width: 760px) {
+  .catalog .list {
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+
+  .catalog .cardTop {
+    padding: 17px;
+  }
+
+  .catalog .capacityGroup,
+  .catalog .detailsBody {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+}
+
 @media (max-width: 680px) {
   .cardTop {
     align-items: start;
