@@ -64,11 +64,11 @@ export function PricingConfigurator() {
             src="/brand/inox-smart-logo-dark.png"
             width="279"
           />
-          <span>SaaS quoting workspace</span>
+          <span>SaaS Quoting Workspace</span>
         </a>
         <div className={styles.topbarMeta}>
-          <span className={styles.saveState}>Pricing rules loaded</span>
-          <span className={styles.version}>v3.0 preview</span>
+          <span className={styles.saveState}>Pricing Version: 20260629</span>
+          <span className={styles.version}>v3.0 by Ayden</span>
         </div>
       </header>
 

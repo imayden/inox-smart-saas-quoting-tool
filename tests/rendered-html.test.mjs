@@ -29,9 +29,10 @@ test("server-renders the v3 pricing configurator", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>INOX Smart SaaS Quoting Tool<\/title>/i);
-  assert.match(html, /SaaS quoting workspace/);
+  assert.match(html, /SaaS Quoting Workspace/);
   assert.match(html, /INTERNAL USE ONLY/);
-  assert.match(html, /3\.0 preview/);
+  assert.match(html, /Pricing Version: 20260629/);
+  assert.match(html, /3\.0 by Ayden/);
   assert.match(html, /src="\/brand\/inox-smart-logo-dark\.png"/);
   assert.doesNotMatch(html, /_next\/image[^>]*inox-smart-logo-dark/);
   assert.match(html, /Capacity needed/);
