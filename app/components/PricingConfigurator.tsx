@@ -78,6 +78,10 @@ export function PricingConfigurator() {
               selectedPlan={selectedPlan}
               variant="sidebar"
             />
+            <p className={styles.sidebarHint}>
+              The lowest-priced matching plan is selected automatically. You can still
+              choose another plan on the right.
+            </p>
           </div>
         </aside>
 
@@ -86,6 +90,9 @@ export function PricingConfigurator() {
             <div>
               <p className="section-kicker">Step 02</p>
               <h2>Select plans</h2>
+              <p className={styles.workspaceHint}>
+                Compare capacity, add-on increments, and included functionality.
+              </p>
             </div>
           </header>
           <PlanSelector

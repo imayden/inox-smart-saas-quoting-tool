@@ -49,19 +49,28 @@ export function PlanSelector({
               onClick={() => onSelect(plan.id)}
               type="button"
             >
-              <span className={styles.selectionMark} aria-hidden="true">
-                {selected ? "Selected" : "Select"}
+              <span className={styles.cardHeader}>
+                <span>
+                  <strong className={styles.planName}>{plan.name}</strong>
+                  <span className={styles.planDescriptor}>
+                    {selected ? "Current selection" : "Click to select"}
+                  </span>
+                </span>
+                <span className={styles.selectionMark} aria-hidden="true">
+                  {selected ? "✓" : "+"}
+                </span>
               </span>
-              <strong className={styles.planName}>{plan.name}</strong>
-              <span className={styles.price}>
-                {formatCurrency(plan.monthlyNet)}
-                <small> / month NET</small>
+              <span className={styles.priceRow}>
+                <span className={styles.price}>
+                  {formatCurrency(plan.monthlyNet)}
+                  <small> NET / month</small>
+                </span>
               </span>
               <span className={styles.msrp}>
                 MSRP {formatCurrency(plan.monthlyNet * APP_CONFIG.msrpMultiplier)} / month
               </span>
               <span className={styles.rule} />
-              <span className={styles.catalogLabel}>Plan starts with</span>
+              <span className={styles.catalogLabel}>Included capacity</span>
               <span className={styles.capacityList}>
                 {CAPACITIES.map((capacity) => (
                   <span key={capacity.key}>
@@ -70,16 +79,20 @@ export function PlanSelector({
                 ))}
               </span>
               <span className={styles.rule} />
-              <span className={styles.catalogLabel}>Add-ons</span>
+              <span className={styles.catalogLabel}>
+                Add-ons · {formatCurrency(APP_CONFIG.addonNetPrice)} NET each
+              </span>
               <span className={styles.addonList}>
                 {CAPACITIES.map((capacity) => (
                   <span key={capacity.key}>
-                    {formatCurrency(APP_CONFIG.addonNetPrice)} per {plan.addonStep[capacity.key]} {capacity.label}
+                    +{plan.addonStep[capacity.key]} {capacity.label}
                   </span>
                 ))}
               </span>
               <span className={styles.rule} />
-              <span className={styles.featureHeading}>Included features</span>
+              <span className={styles.featureHeading}>
+                Included features <small>{(PLAN_FEATURES[plan.id] ?? []).length}</small>
+              </span>
               <span className={styles.featureList}>
                 {(PLAN_FEATURES[plan.id] ?? []).map((feature) => (
                   <span key={feature}>{feature}</span>

@@ -121,8 +121,13 @@
 }
 
 .sidebar .field {
+  color: var(--text);
   gap: 8px;
   padding: 12px;
+}
+
+.sidebar .labelRow {
+  color: var(--text);
 }
 
 .sidebar .field:last-child {
