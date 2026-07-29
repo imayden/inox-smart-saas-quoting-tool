@@ -68,7 +68,7 @@ export const PLAN_FEATURES: Readonly<Record<string, readonly string[]>> = {
 export const APP_CONFIG = {
   brandName: "INOX Smart",
   productName: "SaaS Quoting Tool",
-  eyebrow: "INTERNAL USE ONLY",
+  eyebrow: "FOR REFERENCE ONLY",
   versionLabel: "v2.0 by Ayden",
   description:
     "Enter the capacity your customer needs. The configurator automatically selects the lowest-priced plan while allowing a manual plan override.",

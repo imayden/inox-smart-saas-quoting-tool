@@ -8,6 +8,7 @@ import {
   selectBestPlan,
   type CapacityRequirements,
 } from "../app/lib/pricing";
+import { calculateContractPricing } from "../app/lib/quoteOptions";
 
 function requirements(
   values: Partial<Record<keyof CapacityRequirements, number>>,
@@ -88,4 +89,17 @@ test("input normalization matches the original integer behavior", () => {
   assert.equal(normalizeCapacityInput("7.9"), 7);
   assert.equal(normalizeCapacityInput("-3"), 0);
   assert.equal(normalizeCapacityInput("not-a-number"), 0);
+});
+
+test("term pricing applies a percentage discount before complimentary months", () => {
+  const pricing = calculateContractPricing(100, {
+    termYears: 5,
+    discountPercent: 20,
+    complimentaryMonths: 2,
+  });
+  assert.equal(pricing.termMonths, 60);
+  assert.equal(pricing.termTotal, 6000);
+  assert.equal(pricing.percentageDiscount, 1200);
+  assert.equal(pricing.complimentaryCredit, 160);
+  assert.equal(pricing.totalDue, 4640);
 });

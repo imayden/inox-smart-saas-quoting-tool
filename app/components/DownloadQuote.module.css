@@ -317,6 +317,156 @@
   padding: 8px 10px;
 }
 
+.workspace .quoteInformation summary {
+  font-size: 11px;
+  min-height: 48px;
+}
+
+.workspace .informationBody {
+  gap: 15px;
+  grid-template-columns: 1fr;
+}
+
+.quoteInformation {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  grid-column: 1 / -1;
+  overflow: hidden;
+}
+
+.quoteInformation summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: space-between;
+  list-style: none;
+  min-height: 52px;
+  padding: 10px 14px;
+}
+
+.quoteInformation summary::-webkit-details-marker {
+  display: none;
+}
+
+.quoteInformation summary > span:first-child {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.quoteInformation summary small {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.quoteInformation summary > span:last-child {
+  color: var(--brand-ink);
+  font-size: 18px;
+  transition: transform 160ms ease;
+}
+
+.quoteInformation[open] summary > span:last-child {
+  transform: rotate(180deg);
+}
+
+.informationBody {
+  background: var(--surface-subtle);
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 22px;
+  grid-template-columns: 1.35fr 0.85fr;
+  padding: 17px 14px 18px;
+}
+
+.informationBody fieldset {
+  border: 0;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
+}
+
+.informationBody legend {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+}
+
+.informationBody label {
+  display: grid;
+  gap: 5px;
+}
+
+.informationBody label span {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.informationBody input {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  min-height: 39px;
+  min-width: 0;
+  padding: 8px 9px;
+}
+
+.informationBody input:focus,
+.informationBody textarea:focus {
+  border-color: var(--brand);
+  outline: 3px solid color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.memoField {
+  display: grid;
+  gap: 5px;
+  grid-column: 1 / -1;
+}
+
+.memoField > span {
+  color: var(--text-muted);
+  display: flex;
+  font-size: 9px;
+  font-weight: 800;
+  justify-content: space-between;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.memoField small {
+  font-size: inherit;
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+.informationBody textarea {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  min-height: 72px;
+  padding: 9px;
+  resize: vertical;
+  width: 100%;
+}
+
 .preview {
   background: var(--ink);
   border-radius: var(--radius-lg);
@@ -378,6 +528,25 @@
   max-width: 840px;
   padding: clamp(24px, 4vw, 44px);
   width: 100%;
+}
+
+.memoPreview {
+  color: var(--text-soft);
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 640px) {
+  .informationBody {
+    grid-template-columns: 1fr;
+  }
+
+  .quoteInformation summary {
+    align-items: flex-start;
+  }
 }
 
 .sheetHeader {
@@ -443,6 +612,17 @@
   font-size: 13px;
   font-weight: 800;
   margin: 0;
+}
+
+.billToPreview {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 10px 12px;
 }
 
 .sheetBlock {

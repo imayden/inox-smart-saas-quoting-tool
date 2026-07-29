@@ -1,50 +1,40 @@
 import { jsPDF } from "jspdf";
 import { APP_CONFIG } from "@/app/config/pricing";
 import type { PlanQuote } from "@/app/lib/pricing";
+import {
+  calculateContractPricing,
+  effectiveTermYears,
+  hasBillToOrPlanDetails,
+  hasQuoteAdjustments,
+  type QuoteAdjustments,
+  type QuoteDetails,
+} from "@/app/lib/quoteOptions";
 
 export type QuoteDisplayMode = "net" | "msrp" | "both";
 
 const PDF = {
-  pageWidth: 612,
-  pageHeight: 792,
-  margin: 42,
-  contentWidth: 528,
-  accent: APP_CONFIG.themeColor,
-  ink: "#1A1F18",
-  text: "#283126",
-  muted: "#687064",
-  border: "#DCE2D8",
-  soft: "#F3F6F0",
-  white: "#FFFFFF",
+  pageWidth: 612, pageHeight: 792, margin: 42, contentWidth: 528,
+  accent: APP_CONFIG.themeColor, ink: "#1A1F18", text: "#283126", muted: "#687064",
+  border: "#DCE2D8", soft: "#F3F6F0", white: "#FFFFFF",
 } as const;
 
-function money(amount: number): string {
-  return `${APP_CONFIG.currencySymbol}${amount.toFixed(2)}`;
-}
+function money(amount: number) { return `${APP_CONFIG.currencySymbol}${amount.toFixed(2)}`; }
 
 function drawLabel(doc: jsPDF, text: string, x: number, y: number) {
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(PDF.muted);
-  doc.text(text.toUpperCase(), x, y);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(7.1); doc.setTextColor(PDF.muted); doc.text(text.toUpperCase(), x, y);
 }
 
-function priceForMode(net: number, mode: QuoteDisplayMode): string {
+function priceForMode(net: number, mode: QuoteDisplayMode) {
   const msrp = net * APP_CONFIG.msrpMultiplier;
   if (mode === "net") return `${money(net)} NET`;
   if (mode === "msrp") return `${money(msrp)} MSRP`;
   return `${money(net)} / ${money(msrp)}`;
 }
 
-function createQuoteId(date: Date): string {
+function createQuoteId(date: Date) {
   const datePart = date.toISOString().slice(0, 10).replaceAll("-", "");
-  const random = new Uint32Array(1);
-  globalThis.crypto?.getRandomValues(random);
-  const suffix = (random[0] || Math.floor(Math.random() * 46656))
-    .toString(36)
-    .slice(-4)
-    .toUpperCase()
-    .padStart(4, "0");
+  const random = new Uint32Array(1); globalThis.crypto?.getRandomValues(random);
+  const suffix = (random[0] || Math.floor(Math.random() * 46656)).toString(36).slice(-4).toUpperCase().padStart(4, "0");
   return `INOX-${datePart}-${suffix}`;
 }
 
@@ -53,326 +43,138 @@ async function loadLogo(): Promise<string | null> {
     const response = await fetch("/brand/inox-smart-logo-dark.png");
     if (!response.ok) return null;
     const bytes = new Uint8Array(await response.arrayBuffer());
-    let binary = "";
-    for (const byte of bytes) binary += String.fromCharCode(byte);
+    let binary = ""; for (const byte of bytes) binary += String.fromCharCode(byte);
     return `data:image/png;base64,${btoa(binary)}`;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
-function drawCapacityTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode) {
-  const x = PDF.margin;
-  const y = 218;
-  const widths = [145, 74, 105, 94, 110];
-  const headers = [
-    "CAPACITY",
-    "BASE",
-    "ADD-ON CAPACITY",
-    "TOTAL INCLUDED",
-    mode === "both" ? "ADD-ON NET / MSRP" : `ADD-ON ${mode.toUpperCase()}`,
+function drawSummary(
+  doc: jsPDF, quote: PlanQuote, quoteId: string, generatedAt: Date, mode: QuoteDisplayMode, details: QuoteDetails,
+) {
+  const hasDetails = hasBillToOrPlanDetails(details);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7.6);
+  const memoLines = details.memo ? doc.splitTextToSize(details.memo, PDF.contentWidth - 30) : [];
+  const summaryHeight = hasDetails ? 91 : 62;
+  const memoHeight = memoLines.length > 0 ? 22 + memoLines.length * 10 : 0;
+  const x = PDF.margin; const y = 111; const height = summaryHeight + memoHeight;
+  doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, height, 6, 6, "FD");
+  const columns = [x + 15, x + 191, x + 350];
+  const items = [
+    ["Selected plan", quote.plan.name],
+    ["Quote ID", quoteId],
+    ["Generated", new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(generatedAt)],
   ];
-  const headerHeight = 22;
-  const rowHeight = 24;
-
-  doc.setFillColor(PDF.ink);
-  doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "F");
-
-  let cursorX = x;
-  headers.forEach((header, index) => {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.6);
-    doc.setTextColor(PDF.white);
-    doc.text(header, cursorX + 8, y + 14);
-    cursorX += widths[index];
+  items.forEach(([label, value], index) => {
+    drawLabel(doc, label, columns[index], y + 19); doc.setFont("helvetica", "bold"); doc.setFontSize(index === 0 ? 13 : 8.5); doc.setTextColor(PDF.ink); doc.text(value, columns[index], y + 39);
   });
+  doc.setFont("helvetica", "normal"); doc.setFontSize(7.2); doc.setTextColor(PDF.muted);
+  doc.text(`Pricing view: ${mode === "both" ? "NET + MSRP" : mode.toUpperCase()}`, columns[2], y + 52);
+  if (hasDetails) {
+    const billTo = [details.billToName, details.billToCompany, details.billToEmail].filter(Boolean).join(" · ");
+    const secondLine = [details.planStartDate && `Plan start: ${details.planStartDate}`, details.quotedBy && `Quoted by: ${details.quotedBy}`].filter(Boolean).join(" · ");
+    drawLabel(doc, "Bill to", columns[0], y + 68);
+    drawLabel(doc, "Quote plan", columns[1], y + 68);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(PDF.text);
+    doc.text(doc.splitTextToSize(billTo || "—", 155), columns[0], y + 82);
+    doc.text(doc.splitTextToSize(secondLine || "—", 310), columns[1], y + 82);
+  }
+  if (memoLines.length > 0) {
+    const memoY = y + summaryHeight;
+    drawLabel(doc, "Quote memo", columns[0], memoY + 14);
+    doc.setFont("helvetica", "normal"); doc.setFontSize(7.6); doc.setTextColor(PDF.text);
+    doc.text(memoLines, columns[0], memoY + 27);
+  }
+  return y + height;
+}
 
+function drawCapacityTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
+  const x = PDF.margin; const widths = [145, 64, 104, 94, 121]; const headerHeight = 19; const rowHeight = 18;
+  const headers = ["CAPACITY", "BASE", "ADD-ON CAPACITY", "TOTAL INCLUDED", mode === "both" ? "ADD-ON NET / MSRP" : `ADD-ON ${mode.toUpperCase()}`];
+  doc.setFillColor(PDF.ink); doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "F");
+  let cursorX = x;
+  headers.forEach((header, index) => { doc.setFont("helvetica", "bold"); doc.setFontSize(6.1); doc.setTextColor(PDF.white); doc.text(header, cursorX + 7, y + 12); cursorX += widths[index]; });
   quote.lines.forEach((line, rowIndex) => {
     const rowY = y + headerHeight + rowIndex * rowHeight;
-    if (rowIndex % 2 === 0) {
-      doc.setFillColor(PDF.soft);
-      doc.rect(x, rowY, PDF.contentWidth, rowHeight, "F");
-    }
-    doc.setDrawColor(PDF.border);
-    doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight);
-
-    const values = [
-      line.label,
-      String(line.baseIncluded),
-      line.addonCount > 0
-        ? `+${line.addonUnits} (${line.addonCount} x ${line.addonStep})`
-        : "—",
-      String(line.totalCapacity),
-      line.addonCount > 0 ? priceForMode(line.addonNetCost, mode) : "—",
-    ];
-
+    if (rowIndex % 2 === 0) { doc.setFillColor(PDF.soft); doc.rect(x, rowY, PDF.contentWidth, rowHeight, "F"); }
+    doc.setDrawColor(PDF.border); doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight);
+    const values = [line.label, String(line.baseIncluded), line.addonCount > 0 ? `+${line.addonUnits} (${line.addonCount} x ${line.addonStep})` : "—", String(line.totalCapacity), line.addonCount > 0 ? priceForMode(line.addonNetCost, mode) : "—"];
     let cellX = x;
-    values.forEach((value, index) => {
-      doc.setFont("helvetica", index === 0 || index === 3 ? "bold" : "normal");
-      doc.setFontSize(index === 4 && mode === "both" ? 7 : 8);
-      doc.setTextColor(index === 4 && line.addonCount > 0 ? PDF.text : PDF.muted);
-      doc.text(value, cellX + 8, rowY + 15.5);
-      cellX += widths[index];
-    });
+    values.forEach((value, index) => { doc.setFont("helvetica", index === 0 || index === 3 ? "bold" : "normal"); doc.setFontSize(index === 4 && mode === "both" ? 6.5 : 7.3); doc.setTextColor(index === 4 && line.addonCount > 0 ? PDF.text : PDF.muted); doc.text(value, cellX + 7, rowY + 11.7); cellX += widths[index]; });
   });
+  return y + headerHeight + quote.lines.length * rowHeight;
 }
 
-function drawPricingTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode) {
-  const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
+function drawPricingTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
   const rows = [
-    {
-      description: `${quote.plan.name} base monthly plan`,
-      net: quote.plan.monthlyNet,
-    },
-    ...activeAddons.map((line) => ({
-      description: `${line.label} · +${line.addonUnits} (${line.addonCount} add-on${line.addonCount === 1 ? "" : "s"})`,
-      net: line.addonNetCost,
-    })),
+    { description: `${quote.plan.name} base monthly plan`, net: quote.plan.monthlyNet },
+    ...quote.lines.filter((line) => line.addonCount > 0).map((line) => ({ description: `${line.label} · +${line.addonUnits} (${line.addonCount} add-on${line.addonCount === 1 ? "" : "s"})`, net: line.addonNetCost })),
   ];
-  const x = PDF.margin;
-  const y = 397;
-  const headerHeight = 22;
-  const rowHeight = 21;
-  const descriptionWidth = mode === "both" ? 330 : 388;
-  const priceWidth = (PDF.contentWidth - descriptionWidth) / (mode === "both" ? 2 : 1);
-
-  doc.setFillColor(PDF.soft);
-  doc.setDrawColor(PDF.border);
-  doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "FD");
-  drawLabel(doc, "Description", x + 8, y + 14);
-
-  if (mode === "both") {
-    drawLabel(doc, "NET", x + descriptionWidth + 8, y + 14);
-    drawLabel(doc, "MSRP", x + descriptionWidth + priceWidth + 8, y + 14);
-  } else {
-    drawLabel(doc, mode, x + descriptionWidth + 8, y + 14);
-  }
-
+  const x = PDF.margin; const headerHeight = 19; const rowHeight = 17; const descriptionWidth = mode === "both" ? 330 : 388; const priceWidth = (PDF.contentWidth - descriptionWidth) / (mode === "both" ? 2 : 1);
+  doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "FD"); drawLabel(doc, "Description", x + 7, y + 12);
+  if (mode === "both") { drawLabel(doc, "NET", x + descriptionWidth + 7, y + 12); drawLabel(doc, "MSRP", x + descriptionWidth + priceWidth + 7, y + 12); } else drawLabel(doc, mode, x + descriptionWidth + 7, y + 12);
   rows.forEach((row, index) => {
-    const rowY = y + headerHeight + index * rowHeight;
-    doc.setDrawColor(PDF.border);
-    doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight);
-    doc.setFont("helvetica", index === 0 ? "bold" : "normal");
-    doc.setFontSize(8.2);
-    doc.setTextColor(PDF.text);
-    doc.text(row.description, x + 8, rowY + 14);
-
-    if (mode === "both") {
-      doc.text(money(row.net), x + descriptionWidth + 8, rowY + 14);
-      doc.text(
-        money(row.net * APP_CONFIG.msrpMultiplier),
-        x + descriptionWidth + priceWidth + 8,
-        rowY + 14,
-      );
-    } else {
-      const value = mode === "net" ? row.net : row.net * APP_CONFIG.msrpMultiplier;
-      doc.text(money(value), x + descriptionWidth + 8, rowY + 14);
-    }
+    const rowY = y + headerHeight + index * rowHeight; doc.setDrawColor(PDF.border); doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight); doc.setFont("helvetica", index === 0 ? "bold" : "normal"); doc.setFontSize(7.5); doc.setTextColor(PDF.text); doc.text(row.description, x + 7, rowY + 11.2);
+    if (mode === "both") { doc.text(money(row.net), x + descriptionWidth + 7, rowY + 11.2); doc.text(money(row.net * APP_CONFIG.msrpMultiplier), x + descriptionWidth + priceWidth + 7, rowY + 11.2); } else doc.text(money(mode === "net" ? row.net : row.net * APP_CONFIG.msrpMultiplier), x + descriptionWidth + 7, rowY + 11.2);
   });
+  return y + headerHeight + rows.length * rowHeight;
 }
 
-function drawTotals(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode) {
-  const metrics =
-    mode === "both"
-      ? [
-          ["MONTHLY NET", quote.monthlyNet],
-          ["YEARLY NET", quote.yearlyNet],
-          ["MONTHLY MSRP", quote.monthlyMsrp],
-          ["YEARLY MSRP", quote.yearlyMsrp],
-        ] as const
-      : mode === "net"
-        ? ([
-            ["MONTHLY NET", quote.monthlyNet],
-            ["YEARLY NET", quote.yearlyNet],
-          ] as const)
-        : ([
-            ["MONTHLY MSRP", quote.monthlyMsrp],
-            ["YEARLY MSRP", quote.yearlyMsrp],
-          ] as const);
-
-  const y = 584;
-  const height = 82;
-  const gap = 8;
-  const width = (PDF.contentWidth - gap * (metrics.length - 1)) / metrics.length;
-
-  metrics.forEach(([label, amount], index) => {
-    const x = PDF.margin + index * (width + gap);
-    doc.setFillColor(index === 0 ? PDF.accent : PDF.ink);
-    doc.roundedRect(x, y, width, height, 6, 6, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(6.8);
-    doc.setTextColor(index === 0 ? PDF.ink : "#B9C1B5");
-    doc.text(label, x + 12, y + 23);
-    doc.setFontSize(metrics.length === 4 ? 15 : 20);
-    doc.setTextColor(index === 0 ? PDF.ink : PDF.white);
-    doc.text(money(amount), x + 12, y + 51);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    doc.setTextColor(index === 0 ? "#405016" : "#9EA79A");
-    doc.text(APP_CONFIG.currency, x + 12, y + 67);
-  });
-}
-
-export interface PdfBuildOptions {
-  generatedAt?: Date;
-  logo?: string | null;
-}
-
-export interface QuotePdfFile {
-  blob: Blob;
-  fileName: string;
-}
-
-export function buildQuotePdfDocument(
-  quote: PlanQuote,
-  mode: QuoteDisplayMode,
-  options: PdfBuildOptions = {},
-): jsPDF {
-  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" });
-  const generatedAt = options.generatedAt ?? new Date();
-  const quoteId = createQuoteId(generatedAt);
-  const logo = options.logo ?? null;
-
-  doc.setProperties({
-    title: `${APP_CONFIG.quoteTitle} · ${quote.plan.name}`,
-    subject: "SaaS pricing quote",
-    author: APP_CONFIG.brandName,
-    creator: APP_CONFIG.productName,
-  });
-
-  doc.setFillColor(PDF.accent);
-  doc.rect(0, 0, PDF.pageWidth, 8, "F");
-
-  if (logo) {
-    doc.addImage(logo, "PNG", PDF.margin, 26, 132, 17.5);
+function drawContractSummary(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, adjustments: QuoteAdjustments, y: number) {
+  if (!hasQuoteAdjustments(adjustments)) return y;
+  const net = calculateContractPricing(quote.monthlyNet, adjustments); const msrp = calculateContractPricing(quote.monthlyMsrp, adjustments); const x = PDF.margin; const height = 76;
+  doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, height, 5, 5, "FD");
+  drawLabel(doc, "Contract quote", x + 9, y + 14);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(PDF.text); doc.text(`${effectiveTermYears(adjustments)} year${effectiveTermYears(adjustments) === 1 ? "" : "s"} (${net.termMonths} months)`, x + 105, y + 14);
+  const rows = [
+    ["Term total", net.termTotal, msrp.termTotal],
+    ...(net.percentageDiscount > 0 ? [[`${net.discountPercent}% term discount`, -net.percentageDiscount, -msrp.percentageDiscount]] : []),
+    ...(net.complimentaryCredit > 0 ? [[`${net.complimentaryMonths} complimentary month${net.complimentaryMonths === 1 ? "" : "s"}`, -net.complimentaryCredit, -msrp.complimentaryCredit]] : []),
+    ["Total due", net.totalDue, msrp.totalDue],
+  ] as const;
+  const useRows = rows;
+  const baseY = y + 29;
+  if (mode === "both") {
+    doc.setFont("helvetica", "bold"); doc.setFontSize(6.5); doc.setTextColor(PDF.muted); doc.text("NET", x + 365, y + 14); doc.text("MSRP", x + 448, y + 14);
+    useRows.forEach(([label, netAmount, msrpAmount], index) => { const rowY = baseY + index * 12; doc.setFont("helvetica", index === useRows.length - 1 ? "bold" : "normal"); doc.setFontSize(7.4); doc.setTextColor(index === useRows.length - 1 ? PDF.ink : PDF.muted); doc.text(label, x + 9, rowY); doc.text(`${netAmount < 0 ? "-" : ""}${money(Math.abs(netAmount))}`, x + 365, rowY); doc.text(`${msrpAmount < 0 ? "-" : ""}${money(Math.abs(msrpAmount))}`, x + 448, rowY); });
   } else {
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(PDF.ink);
-    doc.text(APP_CONFIG.brandName, PDF.margin, 42);
+    const values = mode === "net" ? useRows.map(([label, amount]) => [label, amount] as const) : useRows.map(([label, , amount]) => [label, amount] as const);
+    values.forEach(([label, amount], index) => { const rowY = baseY + index * 12; doc.setFont("helvetica", index === values.length - 1 ? "bold" : "normal"); doc.setFontSize(7.6); doc.setTextColor(index === values.length - 1 ? PDF.ink : PDF.muted); doc.text(label, x + 9, rowY); doc.text(`${amount < 0 ? "-" : ""}${money(Math.abs(amount))} ${mode.toUpperCase()}`, PDF.pageWidth - PDF.margin - 9, rowY, { align: "right" }); });
   }
+  return y + height;
+}
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(8);
-  doc.setTextColor(PDF.muted);
-  doc.text("SAAS QUOTE", PDF.pageWidth - PDF.margin, 39, { align: "right" });
+function drawTotals(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
+  const metrics = mode === "both" ? [["MONTHLY NET", quote.monthlyNet], ["YEARLY NET", quote.yearlyNet], ["MONTHLY MSRP", quote.monthlyMsrp], ["YEARLY MSRP", quote.yearlyMsrp]] as const : mode === "net" ? [["MONTHLY NET", quote.monthlyNet], ["YEARLY NET", quote.yearlyNet]] as const : [["MONTHLY MSRP", quote.monthlyMsrp], ["YEARLY MSRP", quote.yearlyMsrp]] as const;
+  const height = 53; const gap = 7; const width = (PDF.contentWidth - gap * (metrics.length - 1)) / metrics.length;
+  metrics.forEach(([label, amount], index) => { const x = PDF.margin + index * (width + gap); doc.setFillColor(index === 0 ? PDF.accent : PDF.ink); doc.roundedRect(x, y, width, height, 6, 6, "F"); doc.setFont("helvetica", "bold"); doc.setFontSize(6.2); doc.setTextColor(index === 0 ? PDF.ink : "#B9C1B5"); doc.text(label, x + 9, y + 17); doc.setFontSize(metrics.length === 4 ? 13 : 18); doc.setTextColor(index === 0 ? PDF.ink : PDF.white); doc.text(money(amount), x + 9, y + 36); });
+  return y + height;
+}
 
-  doc.setFontSize(23);
-  doc.setTextColor(PDF.ink);
-  doc.text(APP_CONFIG.quoteTitle, PDF.margin, 78);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(PDF.muted);
-  doc.text(APP_CONFIG.quoteSubtitle, PDF.margin, 94);
+export interface PdfBuildOptions { adjustments?: QuoteAdjustments; details?: QuoteDetails; generatedAt?: Date; logo?: string | null; }
+export interface QuotePdfFile { blob: Blob; fileName: string; }
 
-  doc.setFillColor(PDF.soft);
-  doc.setDrawColor(PDF.border);
-  doc.roundedRect(PDF.margin, 111, PDF.contentWidth, 70, 6, 6, "FD");
-
-  const summaryColumns = [PDF.margin + 16, PDF.margin + 194, PDF.margin + 353];
-  drawLabel(doc, "Selected plan", summaryColumns[0], 132);
-  drawLabel(doc, "Quote ID", summaryColumns[1], 132);
-  drawLabel(doc, "Generated", summaryColumns[2], 132);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(PDF.ink);
-  doc.text(quote.plan.name, summaryColumns[0], 154);
-  doc.setFontSize(9);
-  doc.text(quoteId, summaryColumns[1], 153);
-  doc.text(
-    new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(generatedAt),
-    summaryColumns[2],
-    153,
-  );
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(PDF.muted);
-  doc.text(`Pricing view: ${mode === "both" ? "NET + MSRP" : mode.toUpperCase()}`, summaryColumns[2], 168);
-
-  drawLabel(doc, "Included capacity", PDF.margin, 207);
-  drawCapacityTable(doc, quote, mode);
-
-  drawLabel(doc, "Pricing detail", PDF.margin, 387);
-  drawPricingTable(doc, quote, mode);
-
-  drawLabel(doc, "Quote totals", PDF.margin, 574);
-  drawTotals(doc, quote, mode);
-
-  doc.setFillColor(PDF.soft);
-  doc.setDrawColor(PDF.border);
-  doc.roundedRect(PDF.margin, 682, PDF.contentWidth, 24, 5, 5, "FD");
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.2);
-  doc.setTextColor(PDF.text);
-  doc.text(
-    "FOR REFERENCE ONLY - This quote is not a formal invoice or binding offer.",
-    PDF.pageWidth / 2,
-    697,
-    { align: "center" },
-  );
-
-  doc.setDrawColor(PDF.border);
-  doc.line(PDF.margin, 716, PDF.pageWidth - PDF.margin, 716);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.2);
-  doc.setTextColor(PDF.muted);
-  doc.text(
-    `All prices are in ${APP_CONFIG.currency}. Add-ons are billed monthly in whole bundles. Annual pricing is monthly pricing × ${APP_CONFIG.monthsPerYear}.`,
-    PDF.margin,
-    733,
-  );
-  if (mode !== "msrp") {
-    doc.text(
-      `MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`,
-      PDF.margin,
-      746,
-    );
-  }
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(PDF.ink);
-  doc.text(APP_CONFIG.brandName, PDF.margin, 768);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(PDF.muted);
-  doc.text("Letter · 8.5 × 11 in · 1 page", PDF.pageWidth - PDF.margin, 768, {
-    align: "right",
-  });
-
+export function buildQuotePdfDocument(quote: PlanQuote, mode: QuoteDisplayMode, options: PdfBuildOptions = {}): jsPDF {
+  const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "letter" }); const generatedAt = options.generatedAt ?? new Date(); const quoteId = createQuoteId(generatedAt); const details = options.details ?? { billToCompany: "", billToEmail: "", billToName: "", memo: "", planStartDate: "", quotedBy: "" }; const adjustments = options.adjustments ?? {};
+  doc.setProperties({ title: `${APP_CONFIG.quoteTitle} · ${quote.plan.name}`, subject: "SaaS pricing quote", author: APP_CONFIG.brandName, creator: APP_CONFIG.productName });
+  doc.setFillColor(PDF.accent); doc.rect(0, 0, PDF.pageWidth, 8, "F");
+  if (options.logo) doc.addImage(options.logo, "PNG", PDF.margin, 26, 132, 17.5); else { doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.brandName, PDF.margin, 42); }
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(PDF.muted); doc.text("SAAS QUOTE", PDF.pageWidth - PDF.margin, 39, { align: "right" }); doc.setFontSize(22); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.quoteTitle, PDF.margin, 78); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(PDF.muted); doc.text(APP_CONFIG.quoteSubtitle, PDF.margin, 94);
+  let y = drawSummary(doc, quote, quoteId, generatedAt, mode, details) + 18;
+  drawLabel(doc, "Included capacity", PDF.margin, y - 8); y = drawCapacityTable(doc, quote, mode, y) + 20;
+  drawLabel(doc, "Pricing detail", PDF.margin, y - 8); y = drawPricingTable(doc, quote, mode, y) + 18;
+  y = drawContractSummary(doc, quote, mode, adjustments, y) + (hasQuoteAdjustments(adjustments) ? 17 : 0);
+  drawLabel(doc, "Quote totals", PDF.margin, y - 8); y = drawTotals(doc, quote, mode, y) + 16;
+  doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(PDF.margin, y, PDF.contentWidth, 22, 5, 5, "FD"); doc.setFont("helvetica", "bold"); doc.setFontSize(6.8); doc.setTextColor(PDF.text); doc.text("FOR REFERENCE ONLY - This quote is not a formal invoice or binding offer.", PDF.pageWidth / 2, y + 14, { align: "center" });
+  const footerY = Math.min(PDF.pageHeight - 20, y + 46); doc.setDrawColor(PDF.border); doc.line(PDF.margin, footerY - 13, PDF.pageWidth - PDF.margin, footerY - 13); doc.setFont("helvetica", "normal"); doc.setFontSize(6.8); doc.setTextColor(PDF.muted); doc.text(`All prices are in ${APP_CONFIG.currency}. Add-ons are billed monthly in whole bundles. Annual pricing is monthly pricing × ${APP_CONFIG.monthsPerYear}.`, PDF.margin, footerY);
+  if (mode !== "msrp") doc.text(`MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`, PDF.margin, footerY + 11);
+  doc.setFont("helvetica", "bold"); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.brandName, PDF.margin, PDF.pageHeight - 12); doc.setFont("helvetica", "normal"); doc.setTextColor(PDF.muted); doc.text("Letter · 8.5 × 11 in · 1 page", PDF.pageWidth - PDF.margin, PDF.pageHeight - 12, { align: "right" });
   return doc;
 }
 
-export async function createQuotePdfFile(
-  quote: PlanQuote,
-  mode: QuoteDisplayMode,
-): Promise<QuotePdfFile> {
-  const generatedAt = new Date();
-  const logo = await loadLogo();
-  const doc = buildQuotePdfDocument(quote, mode, { generatedAt, logo });
-  const dateForFile = generatedAt.toISOString().slice(0, 10);
-  return {
-    blob: doc.output("blob"),
-    fileName: `${APP_CONFIG.quoteFilePrefix}-${quote.plan.id}-${dateForFile}.pdf`,
-  };
+export async function createQuotePdfFile(quote: PlanQuote, mode: QuoteDisplayMode, options: Omit<PdfBuildOptions, "generatedAt" | "logo"> = {}): Promise<QuotePdfFile> {
+  const generatedAt = new Date(); const logo = await loadLogo(); const doc = buildQuotePdfDocument(quote, mode, { ...options, generatedAt, logo }); const dateForFile = generatedAt.toISOString().slice(0, 10);
+  return { blob: doc.output("blob"), fileName: `${APP_CONFIG.quoteFilePrefix}-${quote.plan.id}-${dateForFile}.pdf` };
 }
 
-export function downloadQuotePdfFile(file: QuotePdfFile): void {
-  const url = URL.createObjectURL(file.blob);
-  const link = document.createElement("a");
-  link.download = file.fileName;
-  link.href = url;
-  link.style.display = "none";
-  document.body.append(link);
-  link.click();
-  link.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-}
-
-export async function generateQuotePdf(
-  quote: PlanQuote,
-  mode: QuoteDisplayMode,
-): Promise<void> {
-  downloadQuotePdfFile(await createQuotePdfFile(quote, mode));
-}
+export function downloadQuotePdfFile(file: QuotePdfFile): void { const url = URL.createObjectURL(file.blob); const link = document.createElement("a"); link.download = file.fileName; link.href = url; link.style.display = "none"; document.body.append(link); link.click(); link.remove(); window.setTimeout(() => URL.revokeObjectURL(url), 60_000); }
+export async function generateQuotePdf(quote: PlanQuote, mode: QuoteDisplayMode): Promise<void> { downloadQuotePdfFile(await createQuotePdfFile(quote, mode)); }

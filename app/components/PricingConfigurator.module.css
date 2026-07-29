@@ -159,6 +159,11 @@
     grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
     position: static;
   }
+
+  /* The two quote cards share a tablet row, so their card edges must use one baseline. */
+  .quoteColumn .stickyPanel > * {
+    margin-top: 0;
+  }
 }
 
 @media (max-width: 980px) {

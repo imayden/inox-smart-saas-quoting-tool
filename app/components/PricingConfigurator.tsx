@@ -12,6 +12,11 @@ import {
   selectBestPlan,
   type CapacityRequirements,
 } from "@/app/lib/pricing";
+import {
+  createEmptyQuoteDetails,
+  type QuoteAdjustments,
+  type QuoteDetails,
+} from "@/app/lib/quoteOptions";
 import { CapacityInputs } from "./CapacityInputs";
 import { DownloadQuote } from "./DownloadQuote";
 import { PlanSelector } from "./PlanSelector";
@@ -29,6 +34,8 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
   );
   const [selectedPlanId, setSelectedPlanId] = useState(PRICING_PLANS[0].id);
   const [autoMatched, setAutoMatched] = useState(false);
+  const [adjustments, setAdjustments] = useState<QuoteAdjustments>({});
+  const [quoteDetails, setQuoteDetails] = useState<QuoteDetails>(createEmptyQuoteDetails);
 
   const selectedPlan = findPlan(selectedPlanId);
   const quote = useMemo(
@@ -81,7 +88,7 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
         <section className={styles.intro} aria-label="Quoting tool overview">
           <div>
             <p className="section-kicker">{APP_CONFIG.eyebrow}</p>
-            <h1>Build an accurate SaaS quote.</h1>
+            <h1>SaaS Quoting Workspace - INOX Smart</h1>
           </div>
           <p>
             Configure customer capacity, compare plans side by side, and download the
@@ -124,8 +131,21 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
 
           <aside className={styles.quoteColumn} aria-label="Current quote">
             <div className={styles.stickyPanel}>
-              <PricingBreakdown mode={pricingMode} quote={quote} variant="workspace" />
-              <DownloadQuote fixedMode={pricingMode} quote={quote} variant="workspace" />
+              <PricingBreakdown
+                adjustments={adjustments}
+                mode={pricingMode}
+                onAdjustmentsChange={setAdjustments}
+                quote={quote}
+                variant="workspace"
+              />
+              <DownloadQuote
+                adjustments={adjustments}
+                fixedMode={pricingMode}
+                onQuoteDetailsChange={setQuoteDetails}
+                quote={quote}
+                quoteDetails={quoteDetails}
+                variant="workspace"
+              />
             </div>
           </aside>
         </div>

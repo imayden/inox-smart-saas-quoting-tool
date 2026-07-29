@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { WorkspaceAccessNotice } from "./components/WorkspaceAccessNotice";
 
 export const metadata: Metadata = {
-  title: "Contact Admin - INOX Smart SaaS Quoting Workspace",
+  title: "SaaS Quoting Workspace - INOX Smart",
 };
 
 export default function Home() {

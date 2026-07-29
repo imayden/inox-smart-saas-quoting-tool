@@ -1,9 +1,19 @@
 import { APP_CONFIG } from "@/app/config/pricing";
 import { formatCurrency, type PlanQuote } from "@/app/lib/pricing";
+import {
+  calculateContractPricing,
+  effectiveTermYears,
+  hasQuoteAdjustments,
+  normalizeDiscountPercent,
+  normalizeWholeNumber,
+  type QuoteAdjustments,
+} from "@/app/lib/quoteOptions";
 import styles from "./PricingBreakdown.module.css";
 import type { QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
 
 interface PricingBreakdownProps {
+  adjustments: QuoteAdjustments;
+  onAdjustmentsChange: (adjustments: QuoteAdjustments) => void;
   quote: PlanQuote;
   variant?: "default" | "sidebar" | "dock" | "workspace";
   mode?: QuoteDisplayMode;
@@ -11,13 +21,13 @@ interface PricingBreakdownProps {
 
 function formatPrice(net: number, mode: QuoteDisplayMode) {
   if (mode === "net") return `${formatCurrency(net)} NET`;
-  if (mode === "msrp") {
-    return `${formatCurrency(net * APP_CONFIG.msrpMultiplier)} MSRP`;
-  }
+  if (mode === "msrp") return `${formatCurrency(net * APP_CONFIG.msrpMultiplier)} MSRP`;
   return `${formatCurrency(net)} NET / ${formatCurrency(net * APP_CONFIG.msrpMultiplier)} MSRP`;
 }
 
 export function PricingBreakdown({
+  adjustments,
+  onAdjustmentsChange,
   quote,
   variant = "default",
   mode = "both",
@@ -25,6 +35,13 @@ export function PricingBreakdown({
   const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
   const showNet = mode !== "msrp";
   const showMsrp = mode !== "net";
+  const netContract = calculateContractPricing(quote.monthlyNet, adjustments);
+  const msrpContract = calculateContractPricing(quote.monthlyMsrp, adjustments);
+  const showContract = hasQuoteAdjustments(adjustments);
+
+  function updateAdjustments(update: Partial<QuoteAdjustments>) {
+    onAdjustmentsChange({ ...adjustments, ...update });
+  }
 
   return (
     <section
@@ -91,6 +108,94 @@ export function PricingBreakdown({
           {mode === "both" && <small>MSRP {formatCurrency(quote.yearlyMsrp)}</small>}
         </div>
       </div>
+
+      <details className={styles.quoteOptions}>
+        <summary>
+          <span>
+            Quote options
+            <small>Optional · 1-year term by default</small>
+          </span>
+          <span aria-hidden="true">⌄</span>
+        </summary>
+        <div className={styles.optionsBody}>
+          <label>
+            <span>Term length (years)</span>
+            <input
+              aria-label="Term length in years"
+              inputMode="numeric"
+              min="1"
+              onChange={(event) =>
+                updateAdjustments({ termYears: normalizeWholeNumber(event.target.value, 1) })
+              }
+              placeholder="1"
+              type="number"
+              value={adjustments.termYears ?? ""}
+            />
+          </label>
+          <label>
+            <span>Term discount (%)</span>
+            <input
+              aria-label="Term discount percentage"
+              inputMode="numeric"
+              max="100"
+              min="0"
+              onChange={(event) =>
+                updateAdjustments({ discountPercent: normalizeDiscountPercent(event.target.value) })
+              }
+              placeholder="e.g. 20"
+              type="number"
+              value={adjustments.discountPercent ?? ""}
+            />
+          </label>
+          <label>
+            <span>Complimentary months</span>
+            <input
+              aria-label="Complimentary months"
+              inputMode="numeric"
+              min="0"
+              onChange={(event) =>
+                updateAdjustments({ complimentaryMonths: normalizeWholeNumber(event.target.value) })
+              }
+              placeholder="e.g. 2"
+              type="number"
+              value={adjustments.complimentaryMonths ?? ""}
+            />
+          </label>
+          <p>
+            Percentage savings apply to the full term first. Complimentary months are then
+            credited at the discounted monthly rate and cannot exceed the term duration.
+          </p>
+        </div>
+      </details>
+
+      {showContract && (
+        <section className={styles.contractSummary} aria-label="Contract quote summary">
+          <div className={styles.contractHeading}>
+            <span>Contract quote</span>
+            <strong>
+              {effectiveTermYears(adjustments)} year{effectiveTermYears(adjustments) === 1 ? "" : "s"} ({netContract.termMonths} months)
+            </strong>
+          </div>
+          {mode === "both" ? (
+            <div className={`${styles.contractTable} ${styles.contractTableBoth}`}>
+              <span className={styles.contractColumnLabel} />
+              <span className={styles.contractColumnLabel}>NET</span>
+              <span className={styles.contractColumnLabel}>MSRP</span>
+              <span>Term total</span><b>{formatCurrency(netContract.termTotal)}</b><b>{formatCurrency(msrpContract.termTotal)}</b>
+              {netContract.percentageDiscount > 0 && <><span>{netContract.discountPercent}% term discount</span><b>−{formatCurrency(netContract.percentageDiscount)}</b><b>−{formatCurrency(msrpContract.percentageDiscount)}</b></>}
+              {netContract.complimentaryCredit > 0 && <><span>{netContract.complimentaryMonths} complimentary month{netContract.complimentaryMonths === 1 ? "" : "s"}</span><b>−{formatCurrency(netContract.complimentaryCredit)}</b><b>−{formatCurrency(msrpContract.complimentaryCredit)}</b></>}
+              <span>Total due</span><b>{formatCurrency(netContract.totalDue)} NET</b><b>{formatCurrency(msrpContract.totalDue)} MSRP</b>
+            </div>
+          ) : (
+            <div className={styles.contractTable}>
+              <span>Term total</span><b>{formatCurrency((showNet ? netContract : msrpContract).termTotal)}</b>
+              {(showNet ? netContract : msrpContract).percentageDiscount > 0 && <><span>{(showNet ? netContract : msrpContract).discountPercent}% term discount</span><b>−{formatCurrency((showNet ? netContract : msrpContract).percentageDiscount)}</b></>}
+              {(showNet ? netContract : msrpContract).complimentaryCredit > 0 && <><span>{(showNet ? netContract : msrpContract).complimentaryMonths} complimentary month{(showNet ? netContract : msrpContract).complimentaryMonths === 1 ? "" : "s"}</span><b>−{formatCurrency((showNet ? netContract : msrpContract).complimentaryCredit)}</b></>}
+              <span>Total due</span><b>{formatCurrency((showNet ? netContract : msrpContract).totalDue)} {showNet ? "NET" : "MSRP"}</b>
+            </div>
+          )}
+        </section>
+      )}
     </section>
   );
 }

@@ -22,14 +22,15 @@ async function render(pathname = "/") {
   );
 }
 
-test("server-renders the protected root access notice", async () => {
+test("server-renders the workspace directory", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Contact Admin - INOX Smart SaaS Quoting Workspace<\/title>/i);
-  assert.match(html, /Workspace access required/);
+  assert.match(html, /<title>SaaS Quoting Workspace - INOX Smart<\/title>/i);
+  assert.match(html, /Choose a pricing workspace/);
+  assert.match(html, /Quote NET &amp; MSRP/);
   assert.match(html, /inoxsmartadmin@unisonhardware\.com/);
   assert.doesNotMatch(html, /Capacity needed/);
   assert.doesNotMatch(html, /Download Quote/);

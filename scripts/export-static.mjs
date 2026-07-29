@@ -5,7 +5,7 @@ workerUrl.searchParams.set("static-export", Date.now().toString());
 const { default: worker } = await import(workerUrl.href);
 
 const pages = [
-  { pathname: "/", output: "index.html", expectedText: "Workspace access required" },
+  { pathname: "/", output: "index.html", expectedText: "Choose a pricing workspace" },
   {
     pathname: "/16E5/NET-pricing",
     output: "16E5/NET-pricing/index.html",

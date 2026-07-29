@@ -96,9 +96,20 @@ export function PlanSelector({
                       )}
                     </strong>
                     <small>{isMsrpOnly ? "MSRP / month" : "NET / month"}</small>
+                    <p>
+                      ({formatCurrency(
+                        (isMsrpOnly
+                          ? plan.monthlyNet * APP_CONFIG.msrpMultiplier
+                          : plan.monthlyNet) * APP_CONFIG.monthsPerYear,
+                      )} {isMsrpOnly ? "MSRP" : "NET"} / year, base plan)
+                    </p>
                     {!isNetOnly && !isMsrpOnly && (
                       <p>
                         MSRP {formatCurrency(plan.monthlyNet * APP_CONFIG.msrpMultiplier)} / month
+                        <br />
+                        ({formatCurrency(
+                          plan.monthlyNet * APP_CONFIG.msrpMultiplier * APP_CONFIG.monthsPerYear,
+                        )} MSRP / year, base plan)
                       </p>
                     )}
                   </div>

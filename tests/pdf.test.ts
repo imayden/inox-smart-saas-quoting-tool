@@ -67,3 +67,29 @@ test("creates a browser-downloadable PDF file", async () => {
   assert.match(file.fileName, /^inox-smart-saas-quote-enterprise-\d{4}-\d{2}-\d{2}\.pdf$/);
   assert.ok(file.blob.size > 5_000);
 });
+
+test("PDF includes optional contract incentives and quote information", () => {
+  const pdf = buildQuotePdfDocument(quote, "both", {
+    adjustments: { complimentaryMonths: 2, discountPercent: 20, termYears: 5 },
+    details: {
+      billToCompany: "Unison Hardware",
+      billToEmail: "customer@example.com",
+      billToName: "Sample Customer",
+      memo: "Implementation guidance for the customer onboarding schedule. ".repeat(8).slice(0, 200),
+      planStartDate: "2026-08-01",
+      quotedBy: "Ayden Deng",
+    },
+    generatedAt: new Date("2026-07-14T12:00:00Z"),
+  });
+  const output = pdf.output();
+  assert.equal(pdf.getNumberOfPages(), 1);
+  assert.match(output, /CONTRACT QUOTE/);
+  assert.match(output, /5 years \\\((60 months)\\\)/);
+  assert.doesNotMatch(output, /5 years · 60 months/);
+  assert.match(output, /20% term discount/);
+  assert.match(output, /complimentary months/);
+  assert.match(output, /Sample Customer/);
+  assert.match(output, /Ayden Deng/);
+  assert.match(output, /QUOTE MEMO/);
+  assert.match(output, /Implementation guidance/);
+});
