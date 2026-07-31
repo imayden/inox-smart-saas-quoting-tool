@@ -28,11 +28,12 @@ for (const mode of ["net", "msrp", "both"] as const satisfies readonly QuoteDisp
 
     assert.equal(pdf.getNumberOfPages(), 1);
     assert.equal(Math.round(pdf.internal.pageSize.getWidth()), 612);
-    assert.equal(Math.round(pdf.internal.pageSize.getHeight()), 792);
+  assert.equal(Math.round(pdf.internal.pageSize.getHeight()), 792);
 
     const bytes = new Uint8Array(pdf.output("arraybuffer"));
     assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), "%PDF");
-    assert.ok(bytes.byteLength > 5_000);
+  assert.ok(bytes.byteLength > 5_000);
+  assert.match(pdf.output(), /UTC: Jul 14, 2026, 12:00 PM UTC/);
   });
 }
 

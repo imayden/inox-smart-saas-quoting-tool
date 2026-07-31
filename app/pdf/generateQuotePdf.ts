@@ -38,6 +38,19 @@ function createQuoteId(date: Date) {
   return `INOX-${datePart}-${suffix}`;
 }
 
+function formatGeneratedDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+  }).format(date);
+}
+
+function formatUtcDate(date: Date) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "UTC", month: "short", day: "numeric", year: "numeric",
+    hour: "numeric", minute: "2-digit", timeZoneName: "short",
+  }).format(date);
+}
+
 async function loadLogo(): Promise<string | null> {
   try {
     const response = await fetch("/brand/inox-smart-logo-dark.png");
@@ -54,7 +67,7 @@ function drawSummary(
   const hasDetails = hasBillToOrPlanDetails(details);
   doc.setFont("helvetica", "normal"); doc.setFontSize(7.6);
   const memoLines = details.memo ? doc.splitTextToSize(details.memo, PDF.contentWidth - 30) : [];
-  const summaryHeight = hasDetails ? 91 : 62;
+  const summaryHeight = hasDetails ? 103 : 74;
   const memoHeight = memoLines.length > 0 ? 22 + memoLines.length * 10 : 0;
   const x = PDF.margin; const y = 111; const height = summaryHeight + memoHeight;
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, height, 6, 6, "FD");
@@ -62,21 +75,23 @@ function drawSummary(
   const items = [
     ["Selected plan", quote.plan.name],
     ["Quote ID", quoteId],
-    ["Generated", new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(generatedAt)],
+    ["Generated", formatGeneratedDate(generatedAt)],
   ];
   items.forEach(([label, value], index) => {
     drawLabel(doc, label, columns[index], y + 19); doc.setFont("helvetica", "bold"); doc.setFontSize(index === 0 ? 13 : 8.5); doc.setTextColor(PDF.ink); doc.text(value, columns[index], y + 39);
   });
-  doc.setFont("helvetica", "normal"); doc.setFontSize(7.2); doc.setTextColor(PDF.muted);
-  doc.text(`Pricing view: ${mode === "both" ? "NET + MSRP" : mode.toUpperCase()}`, columns[2], y + 52);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(6.6); doc.setTextColor(PDF.muted);
+  doc.text(`UTC: ${formatUtcDate(generatedAt)}`, columns[2], y + 52);
+  doc.setFontSize(7.2);
+  doc.text(`Pricing view: ${mode === "both" ? "NET + MSRP" : mode.toUpperCase()}`, columns[2], y + 64);
   if (hasDetails) {
     const billTo = [details.billToName, details.billToCompany, details.billToEmail].filter(Boolean).join(" · ");
     const secondLine = [details.planStartDate && `Plan start: ${details.planStartDate}`, details.quotedBy && `Quoted by: ${details.quotedBy}`].filter(Boolean).join(" · ");
-    drawLabel(doc, "Bill to", columns[0], y + 68);
-    drawLabel(doc, "Quote plan", columns[1], y + 68);
+    drawLabel(doc, "Bill to", columns[0], y + 80);
+    drawLabel(doc, "Quote plan", columns[1], y + 80);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(PDF.text);
-    doc.text(doc.splitTextToSize(billTo || "—", 155), columns[0], y + 82);
-    doc.text(doc.splitTextToSize(secondLine || "—", 310), columns[1], y + 82);
+    doc.text(doc.splitTextToSize(billTo || "—", 155), columns[0], y + 94);
+    doc.text(doc.splitTextToSize(secondLine || "—", 310), columns[1], y + 94);
   }
   if (memoLines.length > 0) {
     const memoY = y + summaryHeight;
