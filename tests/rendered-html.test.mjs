@@ -69,3 +69,24 @@ test("server-renders pricing workspaces with their fixed visibility", async () =
   assert.match(bothHtml, /Plan details/);
   assert.doesNotMatch(bothHtml, /codex-preview|Your site is taking shape|SkeletonPreview/);
 });
+
+test("server-renders the access page and workspace navigation routes", async () => {
+  const access = await render("/access");
+  const accessHtml = await access.text();
+  assert.equal(access.status, 200);
+  assert.match(accessHtml, /Access the quoting workspace/);
+  assert.match(accessHtml, /Continue to workspace/);
+  assert.doesNotMatch(accessHtml, /Unison5861!/);
+
+  const plans = await render("/plans");
+  const plansHtml = await plans.text();
+  assert.equal(plans.status, 200);
+  assert.match(plansHtml, /href="\/quoting"/);
+  assert.match(plansHtml, /href="\/plans"/);
+  assert.match(plansHtml, /href="\/settings"/);
+
+  const settings = await render("/settings");
+  const settingsHtml = await settings.text();
+  assert.equal(settings.status, 200);
+  assert.match(settingsHtml, /Pricing workspace details/);
+});

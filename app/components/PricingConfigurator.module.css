@@ -10,6 +10,7 @@
   background: color-mix(in srgb, var(--background) 94%, transparent);
   border-bottom: 1px solid var(--border);
   display: flex;
+  gap: 18px;
   height: 70px;
   justify-content: space-between;
   margin: 0 calc(var(--page-gutter) * -1);
@@ -23,6 +24,7 @@
   align-items: center;
   color: var(--text-muted);
   display: inline-flex;
+  flex: none;
   font-size: 12px;
   font-weight: 650;
   gap: 16px;
@@ -38,6 +40,7 @@
 .topbarMeta {
   align-items: center;
   display: flex;
+  flex: none;
   gap: 10px;
 }
 
@@ -200,6 +203,7 @@
   }
 
   .topbar {
+    flex-wrap: wrap;
     height: auto;
     min-height: 66px;
     padding-bottom: 13px;
@@ -216,7 +220,6 @@
 
   .topbarMeta {
     flex-wrap: wrap;
-    width: 100%;
   }
 
   .intro {

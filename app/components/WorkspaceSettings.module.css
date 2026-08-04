@@ -1,0 +1,39 @@
+.page {
+  --page-gutter: clamp(20px, 4vw, 72px);
+  min-height: 100vh;
+  padding: 0 var(--page-gutter) 64px;
+}
+
+.topbar {
+  align-items: center;
+  backdrop-filter: blur(14px);
+  background: color-mix(in srgb, var(--background) 94%, transparent);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 18px;
+  height: 70px;
+  margin: 0 calc(var(--page-gutter) * -1);
+  padding: 0 var(--page-gutter);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brand { align-items: center; color: var(--text-muted); display: inline-flex; flex: none; font-size: 12px; font-weight: 650; gap: 16px; text-decoration: none; }
+.logo { height: auto; object-fit: contain; width: 176px; }
+.topbarMeta { align-items: center; display: flex; flex: none; gap: 10px; }
+.saveState, .version { border-radius: 999px; font-size: 10px; font-weight: 750; line-height: 1; padding: 8px 10px; white-space: nowrap; }
+.saveState { background: var(--brand-soft); color: var(--brand-ink); }
+.version { border: 1px solid var(--border); color: var(--text-muted); }
+
+.content { margin: clamp(46px, 9vw, 110px) auto 0; max-width: 760px; }
+.content h1 { color: var(--ink); font-size: clamp(32px, 4vw, 46px); letter-spacing: -0.055em; line-height: 1.04; margin-top: 8px; }
+.intro { color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-top: 18px; max-width: 610px; }
+.details { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 30px; }
+.details > div { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: 17px; }
+.details dt { color: var(--text-muted); font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.details dd { color: var(--ink); font-size: 16px; font-weight: 720; margin-top: 8px; }
+.note { background: var(--brand-soft); border: 1px solid color-mix(in srgb, var(--brand) 42%, var(--border)); border-radius: var(--radius-lg); color: var(--text-soft); font-size: 12px; line-height: 1.55; margin-top: 18px; padding: 15px 17px; }
+
+@media (max-width: 960px) { .topbar { flex-wrap: wrap; height: auto; min-height: 70px; padding-bottom: 11px; padding-top: 11px; } }
+@media (max-width: 680px) { .page { --page-gutter: 16px; } .topbar { align-items: flex-start; flex-direction: column; gap: 10px; } .brand { gap: 10px; } .logo { width: 152px; } .topbarMeta { flex-wrap: wrap; } .details { grid-template-columns: 1fr; } .content { margin-top: 48px; } }

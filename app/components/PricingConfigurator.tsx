@@ -23,6 +23,7 @@ import { PlanSelector } from "./PlanSelector";
 import { PricingBreakdown } from "./PricingBreakdown";
 import styles from "./PricingConfigurator.module.css";
 import type { QuoteDisplayMode } from "@/app/pdf/generateQuotePdf";
+import { WorkspaceNav } from "./WorkspaceNav";
 
 interface PricingConfiguratorProps {
   pricingMode: QuoteDisplayMode;
@@ -78,9 +79,10 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
           />
           <span>SaaS Quoting Workspace</span>
         </a>
+        <WorkspaceNav />
         <div className={styles.topbarMeta}>
           <span className={styles.saveState}>Pricing Version: 20260629</span>
-          <span className={styles.version}>v3.0 by Ayden</span>
+          <span className={styles.version}>v3.5 by Ayden</span>
         </div>
       </header>
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./WorkspaceAccessNotice.module.css";
 
 const workspaces = [
@@ -15,14 +16,14 @@ export function WorkspaceAccessNotice() {
         <div className={styles.rule} />
         <p className={styles.kicker}>SaaS Quoting Workspace</p>
         <h1 id="access-heading">Choose a pricing workspace</h1>
-        <p className={styles.copy}>Select the pricing view you need. Each workspace opens in a new tab.</p>
+        <p className={styles.copy}>Select the pricing view you need. You can switch between pricing views at any time.</p>
         <div className={styles.workspaceLinks}>
           {workspaces.map((workspace) => (
-            <a href={workspace.href} key={workspace.href} rel="noreferrer" target="_blank">
+            <Link href={workspace.href} key={workspace.href}>
               <strong>{workspace.label}</strong>
               <span>{workspace.note}</span>
-              <b aria-hidden="true">↗</b>
-            </a>
+              <b aria-hidden="true">→</b>
+            </Link>
           ))}
         </div>
         <footer className={styles.help}>
