@@ -6,10 +6,57 @@
   NODE_VERSION = "22.13.0"
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
 
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[dev]
+  framework = "#custom"
+  command = "npm run dev"
+  publish = "dist/client"
+  port = 8888
+  targetPort = 3000
+
+[[edge_functions]]
+function = "access-gate"
+path = "/"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/quoting*"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/plans*"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/settings*"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/16E5*"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/22625*"
+
+[[edge_functions]]
+function = "access-gate"
+path = "/16E522625*"
+
+# The app statically exports every workspace route (including /access,
+# /quoting, /plans, and /settings). A catch-all SPA rewrite would execute
+# before the Edge Function in Netlify and could turn /access into /index.html,
+# causing a redirect loop. Static route entry points therefore provide safe
+# direct-load and refresh support without bypassing access control.
+
 [[headers]]
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), geolocation=(), microphone=()"
+    X-Robots-Tag = "noindex, nofollow"
     # X-Frame-Options is intentionally omitted so Lark Docs Web Cards can
     # embed this public, browser-only quoting tool.

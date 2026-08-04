@@ -1,0 +1,35 @@
+.nav {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.nav a {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 750;
+  padding: 8px 10px;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background: var(--surface-subtle);
+  color: var(--ink);
+}
+
+.nav a.active {
+  background: var(--brand-soft);
+  border-color: color-mix(in srgb, var(--brand) 42%, var(--border));
+  color: var(--brand-ink);
+}
+
+@media (max-width: 680px) {
+  .nav {
+    margin-left: 0;
+    order: 3;
+    width: 100%;
+  }
+}

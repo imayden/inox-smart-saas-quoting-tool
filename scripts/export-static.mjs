@@ -6,6 +6,10 @@ const { default: worker } = await import(workerUrl.href);
 
 const pages = [
   { pathname: "/", output: "index.html", expectedText: "Choose a pricing workspace" },
+  { pathname: "/access", output: "access/index.html", expectedText: "Access the quoting workspace" },
+  { pathname: "/quoting", output: "quoting/index.html", expectedText: "Download NET + MSRP PDF Quote" },
+  { pathname: "/plans", output: "plans/index.html", expectedText: "Compare plans" },
+  { pathname: "/settings", output: "settings/index.html", expectedText: "Pricing workspace details" },
   {
     pathname: "/16E5/NET-pricing",
     output: "16E5/NET-pricing/index.html",
