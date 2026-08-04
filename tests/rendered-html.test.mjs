@@ -76,7 +76,7 @@ test("server-renders the access page and workspace navigation routes", async () 
   assert.equal(access.status, 200);
   assert.match(accessHtml, /Access the quoting workspace/);
   assert.match(accessHtml, /Continue to workspace/);
-  assert.doesNotMatch(accessHtml, /Unison5861!/);
+  assert.doesNotMatch(accessHtml, /QUOTING_ACCESS_PASSWORD/);
 
   const plans = await render("/plans");
   const plansHtml = await plans.text();
