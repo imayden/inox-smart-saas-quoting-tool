@@ -174,13 +174,14 @@ export function PricingBreakdown({
             <span>Term discount (%)</span>
             <input
               aria-label="Term discount percentage"
-              inputMode="numeric"
+              inputMode="decimal"
               max="100"
               min="0"
               onChange={(event) =>
                 updateAdjustments({ discountPercent: normalizeDiscountPercent(event.target.value) })
               }
-              placeholder="e.g. 20"
+              placeholder="e.g. 28.56"
+              step="0.01"
               type="number"
               value={adjustments.discountPercent ?? ""}
             />

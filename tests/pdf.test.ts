@@ -110,5 +110,27 @@ test("additional-capacity-only PDF excludes the plan base fee and remains single
   assert.match(output, /ADDITIONAL CAPACITY/);
   assert.match(output, /Existing plan base fee and included capacity are excluded from this quote\./);
   assert.match(output, /4 months/);
+  assert.match(output, /4 MONTHS NET/);
+  assert.match(output, /4 MONTHS MSRP/);
+  assert.doesNotMatch(output, /YEARLY NET/);
+  assert.doesNotMatch(output, /YEARLY MSRP/);
   assert.doesNotMatch(output, /Professional base monthly plan/);
+});
+
+test("PDF summary expands to contain wrapped Bill To details", () => {
+  const pdf = buildQuotePdfDocument(quote, "both", {
+    details: {
+      billToCompany: "A Long Customer Organization Name for Layout Verification",
+      billToEmail: "a.long.customer.email.address@example-company.com",
+      billToName: "A Customer With a Long Display Name",
+      memo: "",
+      planStartDate: "2026-09-08",
+      quotedBy: "Ayden Deng",
+    },
+    generatedAt: new Date("2026-09-02T21:17:00Z"),
+  });
+
+  assert.equal(pdf.getNumberOfPages(), 1);
+  assert.match(pdf.output(), /Long Customer Organization Name for/);
+  assert.match(pdf.output(), /address@example-company.com/);
 });

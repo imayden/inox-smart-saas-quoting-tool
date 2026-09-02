@@ -8,7 +8,7 @@ import {
   selectBestPlan,
   type CapacityRequirements,
 } from "../app/lib/pricing";
-import { calculateContractPricing } from "../app/lib/quoteOptions";
+import { calculateContractPricing, normalizeDiscountPercent } from "../app/lib/quoteOptions";
 
 function requirements(
   values: Partial<Record<keyof CapacityRequirements, number>>,
@@ -117,6 +117,18 @@ test("term pricing applies a percentage discount before complimentary months", (
   assert.equal(pricing.percentageDiscount, 1200);
   assert.equal(pricing.complimentaryCredit, 160);
   assert.equal(pricing.totalDue, 4640);
+});
+
+test("term pricing supports discount percentages to two decimal places", () => {
+  const pricing = calculateContractPricing(100, {
+    discountPercent: normalizeDiscountPercent("28.56"),
+    termYears: 1,
+  });
+
+  assert.equal(pricing.discountPercent, 28.56);
+  assert.equal(pricing.percentageDiscount, 342.72);
+  assert.equal(pricing.totalDue, 857.28);
+  assert.equal(normalizeDiscountPercent("28.567"), 28.57);
 });
 
 test("monthly subscription pricing uses whole months and excludes complimentary months", () => {

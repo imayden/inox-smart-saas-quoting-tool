@@ -41,8 +41,14 @@ export function normalizeWholeNumber(value: string, minimum = 0): number | undef
 }
 
 export function normalizeDiscountPercent(value: string): number | undefined {
-  const parsed = normalizeWholeNumber(value);
-  return parsed === undefined ? undefined : Math.min(100, parsed);
+  if (value.trim() === "") return undefined;
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed)) return undefined;
+
+  // Discounts can be quoted to the nearest hundredth of one percent (e.g. 28.56%).
+  // Keep the normalized value at two decimal places so both the live quote and PDF
+  // calculate and display the same result.
+  return Math.min(100, Math.max(0, Number(parsed.toFixed(2))));
 }
 
 export function effectiveTermYears(adjustments: QuoteAdjustments): number {

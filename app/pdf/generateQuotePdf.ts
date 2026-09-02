@@ -3,6 +3,8 @@ import { APP_CONFIG } from "@/app/config/pricing";
 import type { PlanQuote } from "@/app/lib/pricing";
 import {
   calculateContractPricing,
+  effectiveBillingMode,
+  effectiveTermMonths,
   formatTerm,
   hasBillToOrPlanDetails,
   hasQuoteAdjustments,
@@ -67,7 +69,13 @@ function drawSummary(
   const hasDetails = hasBillToOrPlanDetails(details);
   doc.setFont("helvetica", "normal"); doc.setFontSize(7.6);
   const memoLines = details.memo ? doc.splitTextToSize(details.memo, PDF.contentWidth - 30) : [];
-  const summaryHeight = hasDetails ? 103 : 74;
+  const billTo = [details.billToName, details.billToCompany, details.billToEmail].filter(Boolean).join(" · ");
+  const quotePlan = [details.planStartDate && `Plan start: ${details.planStartDate}`, details.quotedBy && `Quoted by: ${details.quotedBy}`].filter(Boolean).join(" · ");
+  doc.setFontSize(8);
+  const billToLines = hasDetails ? doc.splitTextToSize(billTo || "—", 155) : [];
+  const quotePlanLines = hasDetails ? doc.splitTextToSize(quotePlan || "—", 310) : [];
+  const detailLineCount = Math.max(billToLines.length, quotePlanLines.length, 1);
+  const summaryHeight = hasDetails ? 103 + (detailLineCount - 1) * 9.2 : 74;
   const memoHeight = memoLines.length > 0 ? 22 + memoLines.length * 10 : 0;
   const x = PDF.margin; const y = 111; const height = summaryHeight + memoHeight;
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, height, 6, 6, "FD");
@@ -85,13 +93,11 @@ function drawSummary(
   doc.setFontSize(7.2);
   doc.text(`Pricing view: ${mode === "both" ? "NET + MSRP" : mode.toUpperCase()}`, columns[2], y + 64);
   if (hasDetails) {
-    const billTo = [details.billToName, details.billToCompany, details.billToEmail].filter(Boolean).join(" · ");
-    const secondLine = [details.planStartDate && `Plan start: ${details.planStartDate}`, details.quotedBy && `Quoted by: ${details.quotedBy}`].filter(Boolean).join(" · ");
     drawLabel(doc, "Bill to", columns[0], y + 80);
     drawLabel(doc, "Quote plan", columns[1], y + 80);
     doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(PDF.text);
-    doc.text(doc.splitTextToSize(billTo || "—", 155), columns[0], y + 94);
-    doc.text(doc.splitTextToSize(secondLine || "—", 310), columns[1], y + 94);
+    doc.text(billToLines, columns[0], y + 94);
+    doc.text(quotePlanLines, columns[1], y + 94);
   }
   if (memoLines.length > 0) {
     const memoY = y + summaryHeight;
@@ -163,8 +169,15 @@ function drawContractSummary(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMod
   return y + height;
 }
 
-function drawTotals(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
-  const metrics = mode === "both" ? [["MONTHLY NET", quote.monthlyNet], ["YEARLY NET", quote.yearlyNet], ["MONTHLY MSRP", quote.monthlyMsrp], ["YEARLY MSRP", quote.yearlyMsrp]] as const : mode === "net" ? [["MONTHLY NET", quote.monthlyNet], ["YEARLY NET", quote.yearlyNet]] as const : [["MONTHLY MSRP", quote.monthlyMsrp], ["YEARLY MSRP", quote.yearlyMsrp]] as const;
+function drawTotals(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, adjustments: QuoteAdjustments, y: number) {
+  const monthlyBilling = effectiveBillingMode(adjustments) === "monthly";
+  const termMonths = effectiveTermMonths(adjustments);
+  const termLabel = `${termMonths} MONTH${termMonths === 1 ? "" : "S"}`;
+  const netTermDue = calculateContractPricing(quote.monthlyNet, adjustments).totalDue;
+  const msrpTermDue = calculateContractPricing(quote.monthlyMsrp, adjustments).totalDue;
+  const netPeriodMetric = monthlyBilling ? [`${termLabel} NET`, netTermDue] as const : ["YEARLY NET", quote.yearlyNet] as const;
+  const msrpPeriodMetric = monthlyBilling ? [`${termLabel} MSRP`, msrpTermDue] as const : ["YEARLY MSRP", quote.yearlyMsrp] as const;
+  const metrics = mode === "both" ? [["MONTHLY NET", quote.monthlyNet], netPeriodMetric, ["MONTHLY MSRP", quote.monthlyMsrp], msrpPeriodMetric] as const : mode === "net" ? [["MONTHLY NET", quote.monthlyNet], netPeriodMetric] as const : [["MONTHLY MSRP", quote.monthlyMsrp], msrpPeriodMetric] as const;
   const height = 53; const gap = 7; const width = (PDF.contentWidth - gap * (metrics.length - 1)) / metrics.length;
   metrics.forEach(([label, amount], index) => { const x = PDF.margin + index * (width + gap); doc.setFillColor(index === 0 ? PDF.accent : PDF.ink); doc.roundedRect(x, y, width, height, 6, 6, "F"); doc.setFont("helvetica", "bold"); doc.setFontSize(6.2); doc.setTextColor(index === 0 ? PDF.ink : "#B9C1B5"); doc.text(label, x + 9, y + 17); doc.setFontSize(metrics.length === 4 ? 13 : 18); doc.setTextColor(index === 0 ? PDF.ink : PDF.white); doc.text(money(amount), x + 9, y + 36); });
   return y + height;
@@ -183,7 +196,7 @@ export function buildQuotePdfDocument(quote: PlanQuote, mode: QuoteDisplayMode, 
   drawLabel(doc, quote.pricingMethod === "additional-capacity-only" ? "Additional capacity" : "Included capacity", PDF.margin, y - 8); y = drawCapacityTable(doc, quote, mode, y) + 20;
   drawLabel(doc, quote.pricingMethod === "additional-capacity-only" ? "Additional capacity pricing" : "Pricing detail", PDF.margin, y - 8); y = drawPricingTable(doc, quote, mode, y) + 18;
   y = drawContractSummary(doc, quote, mode, adjustments, y) + (hasQuoteAdjustments(adjustments) ? 17 : 0);
-  drawLabel(doc, "Quote totals", PDF.margin, y - 8); y = drawTotals(doc, quote, mode, y) + 16;
+  drawLabel(doc, "Quote totals", PDF.margin, y - 8); y = drawTotals(doc, quote, mode, adjustments, y) + 16;
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(PDF.margin, y, PDF.contentWidth, 22, 5, 5, "FD"); doc.setFont("helvetica", "bold"); doc.setFontSize(6.8); doc.setTextColor(PDF.text); doc.text("FOR REFERENCE ONLY - This quote is not a formal invoice or binding offer.", PDF.pageWidth / 2, y + 14, { align: "center" });
   const footerY = Math.min(PDF.pageHeight - 20, y + 46); doc.setDrawColor(PDF.border); doc.line(PDF.margin, footerY - 13, PDF.pageWidth - PDF.margin, footerY - 13); doc.setFont("helvetica", "normal"); doc.setFontSize(6.8); doc.setTextColor(PDF.muted); doc.text(`All prices are in ${APP_CONFIG.currency}. Add-ons are billed monthly in whole bundles. Annual pricing is monthly pricing × ${APP_CONFIG.monthsPerYear}.`, PDF.margin, footerY);
   if (quote.pricingMethod === "additional-capacity-only") doc.text("Existing plan base fee and included capacity are excluded from this quote.", PDF.margin, footerY + 11);

@@ -62,6 +62,15 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
     }
   }
 
+  function handleClearCapacities() {
+    const emptyRequirements = createEmptyRequirements();
+    const bestPlan = selectBestPlan(emptyRequirements);
+
+    setRequirements(emptyRequirements);
+    setSelectedPlanId(bestPlan.id);
+    setAutoMatched(bestPlan.id !== selectedPlanId);
+  }
+
   function handlePlanSelect(planId: string) {
     setSelectedPlanId(planId);
     setAutoMatched(false);
@@ -105,6 +114,7 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
             <div className={styles.stickyPanel}>
               <CapacityInputs
                 onChange={handleCapacityChange}
+                onClear={handleClearCapacities}
                 requirements={requirements}
                 additionalCapacityOnly={pricingMethod === "additional-capacity-only"}
                 selectedPlan={selectedPlan}

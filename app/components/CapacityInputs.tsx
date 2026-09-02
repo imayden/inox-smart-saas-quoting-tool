@@ -7,6 +7,7 @@ interface CapacityInputsProps {
   requirements: CapacityRequirements;
   selectedPlan: PricingPlan;
   onChange: (key: keyof CapacityRequirements, value: string) => void;
+  onClear: () => void;
   variant?: "default" | "workspace";
 }
 
@@ -15,8 +16,13 @@ export function CapacityInputs({
   requirements,
   selectedPlan,
   onChange,
+  onClear,
   variant = "default",
 }: CapacityInputsProps) {
+  const hasEnteredCapacity = CAPACITIES.some(
+    (capacity) => requirements[capacity.key] !== "",
+  );
+
   return (
     <section
       className={`${styles.section} ${variant === "workspace" ? styles.workspace : ""}`}
@@ -27,7 +33,17 @@ export function CapacityInputs({
           <p className="section-kicker">Step 01</p>
           <h2 id="capacity-heading">{additionalCapacityOnly ? "Additional capacity required" : "Capacity needed"}</h2>
         </div>
-        <p>{additionalCapacityOnly ? "Enter only the capacity to add. All values are billed as add-ons in whole bundles." : "Whole numbers only. Blank fields are calculated as zero."}</p>
+        <div className={styles.headerActions}>
+          <p>{additionalCapacityOnly ? "Enter only the capacity to add. All values are billed as add-ons in whole bundles." : "Whole numbers only. Blank fields are calculated as zero."}</p>
+          <button
+            className={styles.clearButton}
+            disabled={!hasEnteredCapacity}
+            onClick={onClear}
+            type="button"
+          >
+            Clear all
+          </button>
+        </div>
       </div>
 
       <div className={styles.grid}>
