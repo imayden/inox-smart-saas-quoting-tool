@@ -11,6 +11,7 @@ import {
   normalizeCapacityInput,
   selectBestPlan,
   type CapacityRequirements,
+  type PricingMethod,
 } from "@/app/lib/pricing";
 import {
   createEmptyQuoteDetails,
@@ -35,13 +36,14 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
   );
   const [selectedPlanId, setSelectedPlanId] = useState(PRICING_PLANS[0].id);
   const [autoMatched, setAutoMatched] = useState(false);
+  const [pricingMethod, setPricingMethod] = useState<PricingMethod>("standard");
   const [adjustments, setAdjustments] = useState<QuoteAdjustments>({});
   const [quoteDetails, setQuoteDetails] = useState<QuoteDetails>(createEmptyQuoteDetails);
 
   const selectedPlan = findPlan(selectedPlanId);
   const quote = useMemo(
-    () => calculatePlanQuote(requirements, selectedPlan),
-    [requirements, selectedPlan],
+    () => calculatePlanQuote(requirements, selectedPlan, pricingMethod),
+    [requirements, pricingMethod, selectedPlan],
   );
 
   function handleCapacityChange(key: CapacityKey, rawValue: string) {
@@ -82,7 +84,7 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
         <WorkspaceNav />
         <div className={styles.topbarMeta}>
           <span className={styles.saveState}>Pricing Version: 20260629</span>
-          <span className={styles.version}>v3.5 by Ayden</span>
+          <span className={styles.version}>v3.6 by Ayden</span>
         </div>
       </header>
 
@@ -104,6 +106,7 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
               <CapacityInputs
                 onChange={handleCapacityChange}
                 requirements={requirements}
+                additionalCapacityOnly={pricingMethod === "additional-capacity-only"}
                 selectedPlan={selectedPlan}
                 variant="workspace"
               />
@@ -122,6 +125,25 @@ export function PricingConfigurator({ pricingMode }: PricingConfiguratorProps) {
               </div>
               <p>Choose a plan by clicking its card. All capacity, add-on, and feature details are visible for comparison.</p>
             </header>
+            <section className={styles.pricingMethod} aria-labelledby="pricing-method-heading">
+              <div>
+                <p className="section-kicker">Optional</p>
+                <h3 id="pricing-method-heading">Selected plan calculation</h3>
+                <p>Currently using {selectedPlan.name}. Keep the standard quote for a plan and its overage capacity, or quote add-on capacity only for an existing subscriber.</p>
+              </div>
+              <label className={styles.methodToggle}>
+                <input
+                  checked={pricingMethod === "additional-capacity-only"}
+                  onChange={(event) => setPricingMethod(event.target.checked ? "additional-capacity-only" : "standard")}
+                  type="checkbox"
+                />
+                <span className={styles.toggleTrack} aria-hidden="true"><span /></span>
+                <span>
+                  <strong>Quote additional capacity only</strong>
+                  <small>Excludes the plan base fee and included capacity. Step 01 is priced entirely as add-ons using the selected plan.</small>
+                </span>
+              </label>
+            </section>
             <PlanSelector
               autoMatched={autoMatched}
               catalog

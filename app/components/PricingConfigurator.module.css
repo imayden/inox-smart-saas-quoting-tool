@@ -146,6 +146,102 @@
   text-align: right;
 }
 
+.pricingMethod {
+  align-items: center;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.92fr);
+  margin: 14px 0;
+  padding: 16px 18px;
+}
+
+.pricingMethod h3 {
+  color: var(--ink);
+  font-size: 16px;
+  letter-spacing: -0.025em;
+  margin-top: 3px;
+}
+
+.pricingMethod > div > p:last-child {
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin-top: 5px;
+  max-width: 520px;
+}
+
+.methodToggle {
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.methodToggle input {
+  height: 1px;
+  opacity: 0;
+  position: absolute;
+  width: 1px;
+}
+
+.toggleTrack {
+  background: #cfd6ca;
+  border-radius: 999px;
+  display: flex;
+  height: 22px;
+  margin-top: 2px;
+  padding: 3px;
+  transition: background 160ms ease;
+  width: 40px;
+}
+
+.toggleTrack span {
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(16 30 13 / 25%);
+  height: 16px;
+  transition: transform 160ms ease;
+  width: 16px;
+}
+
+.methodToggle input:checked + .toggleTrack {
+  background: var(--brand);
+}
+
+.methodToggle input:checked + .toggleTrack span {
+  transform: translateX(18px);
+}
+
+.methodToggle input:focus-visible + .toggleTrack {
+  outline: 3px solid color-mix(in srgb, var(--brand) 36%, transparent);
+  outline-offset: 3px;
+}
+
+.methodToggle strong,
+.methodToggle small {
+  display: block;
+}
+
+.methodToggle strong {
+  color: var(--ink);
+  font-size: 11px;
+}
+
+.methodToggle small {
+  color: var(--text-muted);
+  font-size: 10px;
+  line-height: 1.4;
+  margin-top: 3px;
+}
+
 @media (max-width: 1360px) {
   .workspace {
     grid-template-columns: minmax(250px, 0.78fr) minmax(540px, 1.5fr);
@@ -239,6 +335,10 @@
 
   .sectionHeader > p {
     text-align: left;
+  }
+
+  .pricingMethod {
+    grid-template-columns: 1fr;
   }
 }
 

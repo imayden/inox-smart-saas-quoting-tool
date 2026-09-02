@@ -64,6 +64,13 @@
   padding-left: 16px;
 }
 
+.methodNotice {
+  background: var(--brand-soft);
+  border-top: 1px dashed color-mix(in srgb, var(--brand) 60%, var(--border));
+  margin: 4px -8px 0;
+  padding: 8px;
+}
+
 .noAddons {
   border-top: 1px dashed var(--border);
   color: var(--text-muted);
@@ -321,6 +328,65 @@
   padding: 15px 18px 17px;
 }
 
+.billingMode {
+  border: 0;
+  display: grid;
+  gap: 8px;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.billingMode legend {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 800;
+  grid-column: 1 / -1;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.optionsBody .billingMode label {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  grid-template-rows: none;
+  min-height: 52px;
+  padding: 8px 9px;
+}
+
+.optionsBody .billingMode input {
+  accent-color: var(--brand-ink);
+  height: 15px;
+  min-height: 0;
+  padding: 0;
+  width: 15px;
+}
+
+.optionsBody .billingMode label > span {
+  align-self: auto;
+  color: var(--text);
+  display: grid;
+  font-size: 10px;
+  font-weight: 650;
+  gap: 2px;
+  letter-spacing: normal;
+  line-height: 1.25;
+  text-transform: none;
+}
+
+.billingMode small {
+  color: var(--text-muted);
+  font-size: 9px;
+  font-weight: 500;
+}
+
 .optionsBody label {
   display: grid;
   gap: 6px;
@@ -425,6 +491,10 @@
 
 @media (max-width: 600px) {
   .optionsBody {
+    grid-template-columns: 1fr;
+  }
+
+  .billingMode {
     grid-template-columns: 1fr;
   }
 

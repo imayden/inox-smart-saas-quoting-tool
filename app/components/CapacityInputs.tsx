@@ -3,6 +3,7 @@ import type { CapacityRequirements } from "@/app/lib/pricing";
 import styles from "./CapacityInputs.module.css";
 
 interface CapacityInputsProps {
+  additionalCapacityOnly?: boolean;
   requirements: CapacityRequirements;
   selectedPlan: PricingPlan;
   onChange: (key: keyof CapacityRequirements, value: string) => void;
@@ -10,6 +11,7 @@ interface CapacityInputsProps {
 }
 
 export function CapacityInputs({
+  additionalCapacityOnly = false,
   requirements,
   selectedPlan,
   onChange,
@@ -23,9 +25,9 @@ export function CapacityInputs({
       <div className={styles.sectionHeader}>
         <div>
           <p className="section-kicker">Step 01</p>
-          <h2 id="capacity-heading">Capacity needed</h2>
+          <h2 id="capacity-heading">{additionalCapacityOnly ? "Additional capacity required" : "Capacity needed"}</h2>
         </div>
-        <p>Whole numbers only. Blank fields are calculated as zero.</p>
+        <p>{additionalCapacityOnly ? "Enter only the capacity to add. All values are billed as add-ons in whole bundles." : "Whole numbers only. Blank fields are calculated as zero."}</p>
       </div>
 
       <div className={styles.grid}>
@@ -34,11 +36,11 @@ export function CapacityInputs({
             <span className={styles.labelRow}>
               <span>{capacity.label}</span>
               <span className={styles.includedBadge}>
-                Plan includes {selectedPlan.included[capacity.key]}
+                {additionalCapacityOnly ? `Add-on bundle ${selectedPlan.addonStep[capacity.key]}` : `Plan includes ${selectedPlan.included[capacity.key]}`}
               </span>
             </span>
             <input
-              aria-label={`${capacity.label} required`}
+              aria-label={`${capacity.label} ${additionalCapacityOnly ? "additional capacity" : "required"}`}
               inputMode="numeric"
               min="0"
               step="1"

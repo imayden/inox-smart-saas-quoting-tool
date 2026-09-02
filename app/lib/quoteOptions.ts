@@ -1,6 +1,8 @@
 export interface QuoteAdjustments {
+  billingMode?: "annual" | "monthly";
   discountPercent?: number;
   complimentaryMonths?: number;
+  termMonths?: number;
   termYears?: number;
 }
 
@@ -14,13 +16,14 @@ export interface QuoteDetails {
 }
 
 export interface ContractPricing {
+  billingMode: "annual" | "monthly";
   complimentaryCredit: number;
   complimentaryMonths: number;
   discountPercent: number;
   percentageDiscount: number;
   termMonths: number;
   termTotal: number;
-  termYears: number;
+  termYears?: number;
   totalDue: number;
 }
 
@@ -46,8 +49,29 @@ export function effectiveTermYears(adjustments: QuoteAdjustments): number {
   return Math.max(1, adjustments.termYears ?? 1);
 }
 
+export function effectiveBillingMode(adjustments: QuoteAdjustments): "annual" | "monthly" {
+  return adjustments.billingMode ?? "annual";
+}
+
+export function effectiveTermMonths(adjustments: QuoteAdjustments): number {
+  return effectiveBillingMode(adjustments) === "monthly"
+    ? Math.max(1, adjustments.termMonths ?? 1)
+    : effectiveTermYears(adjustments) * MONTHS_PER_YEAR;
+}
+
+export function formatTerm(adjustments: QuoteAdjustments): string {
+  const months = effectiveTermMonths(adjustments);
+  if (effectiveBillingMode(adjustments) === "monthly") {
+    return `${months} month${months === 1 ? "" : "s"}`;
+  }
+
+  const years = effectiveTermYears(adjustments);
+  return `${years} year${years === 1 ? "" : "s"} (${months} months)`;
+}
+
 export function hasQuoteAdjustments(adjustments: QuoteAdjustments): boolean {
   return Boolean(
+    effectiveBillingMode(adjustments) === "monthly" ||
     (adjustments.discountPercent ?? 0) > 0 ||
       (adjustments.complimentaryMonths ?? 0) > 0 ||
       effectiveTermYears(adjustments) > 1,
@@ -62,10 +86,13 @@ export function calculateContractPricing(
   monthlyPrice: number,
   adjustments: QuoteAdjustments,
 ): ContractPricing {
-  const termYears = effectiveTermYears(adjustments);
-  const termMonths = termYears * MONTHS_PER_YEAR;
+  const billingMode = effectiveBillingMode(adjustments);
+  const termYears = billingMode === "annual" ? effectiveTermYears(adjustments) : undefined;
+  const termMonths = effectiveTermMonths(adjustments);
   const discountPercent = Math.min(100, Math.max(0, adjustments.discountPercent ?? 0));
-  const requestedComplimentaryMonths = Math.max(0, adjustments.complimentaryMonths ?? 0);
+  const requestedComplimentaryMonths = billingMode === "annual"
+    ? Math.max(0, adjustments.complimentaryMonths ?? 0)
+    : 0;
   const complimentaryMonths = Math.min(termMonths, requestedComplimentaryMonths);
   const termTotal = toCurrency(monthlyPrice * termMonths);
   const percentageDiscount = toCurrency(termTotal * (discountPercent / 100));
@@ -76,6 +103,7 @@ export function calculateContractPricing(
   );
 
   return {
+    billingMode,
     complimentaryCredit,
     complimentaryMonths,
     discountPercent,

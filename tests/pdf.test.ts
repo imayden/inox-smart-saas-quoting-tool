@@ -94,3 +94,21 @@ test("PDF includes optional contract incentives and quote information", () => {
   assert.match(output, /QUOTE MEMO/);
   assert.match(output, /Implementation guidance/);
 });
+
+test("additional-capacity-only PDF excludes the plan base fee and remains single page", () => {
+  const additionalQuote = calculatePlanQuote(
+    { ...createEmptyRequirements(), devices: 23 },
+    PRICING_PLANS[1],
+    "additional-capacity-only",
+  );
+  const pdf = buildQuotePdfDocument(additionalQuote, "both", {
+    adjustments: { billingMode: "monthly", termMonths: 4, discountPercent: 10 },
+    generatedAt: new Date("2026-07-14T12:00:00Z"),
+  });
+  const output = pdf.output();
+  assert.equal(pdf.getNumberOfPages(), 1);
+  assert.match(output, /ADDITIONAL CAPACITY/);
+  assert.match(output, /Existing plan base fee and included capacity are excluded from this quote\./);
+  assert.match(output, /4 months/);
+  assert.doesNotMatch(output, /Professional base monthly plan/);
+});

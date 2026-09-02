@@ -61,7 +61,7 @@ test("server-renders pricing workspaces with their fixed visibility", async () =
   assert.match(bothHtml, /Monthly NET/);
   assert.match(bothHtml, /Monthly MSRP/);
   assert.match(bothHtml, /Pricing Version: 20260629/);
-  assert.match(bothHtml, /3\.0 by Ayden/);
+  assert.match(bothHtml, /v3\.6 by Ayden/);
   assert.match(bothHtml, /src="\/brand\/inox-smart-logo-dark\.png"/);
   assert.doesNotMatch(bothHtml, /_next\/image[^>]*inox-smart-logo-dark/);
   assert.match(bothHtml, /Capacity needed/);
@@ -81,9 +81,9 @@ test("server-renders the access page and workspace navigation routes", async () 
   const plans = await render("/plans");
   const plansHtml = await plans.text();
   assert.equal(plans.status, 200);
-  assert.match(plansHtml, /href="\/quoting"/);
-  assert.match(plansHtml, /href="\/plans"/);
-  assert.match(plansHtml, /href="\/settings"/);
+  assert.match(plansHtml, /href="\/16E5\/NET-pricing"/);
+  assert.match(plansHtml, /href="\/22625\/MSRP-pricing"/);
+  assert.match(plansHtml, /href="\/16E522625\/MSRP_w_NET"/);
 
   const settings = await render("/settings");
   const settingsHtml = await settings.text();

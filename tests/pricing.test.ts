@@ -42,6 +42,21 @@ test("add-ons round up by whole bundle and cost $5 NET each", () => {
   assert.equal(quote.monthlyNet, 54.99);
 });
 
+test("additional-capacity-only quotes every requested unit as an add-on without a plan base fee", () => {
+  const quote = calculatePlanQuote(
+    requirements({ devices: 23 }),
+    PRICING_PLANS[1],
+    "additional-capacity-only",
+  );
+  const devices = quote.lines.find((line) => line.key === "devices");
+  assert.equal(quote.baseMonthlyNet, 0);
+  assert.equal(devices?.baseIncluded, 0);
+  assert.equal(devices?.addonCount, 5);
+  assert.equal(devices?.addonUnits, 25);
+  assert.equal(quote.monthlyNet, 25);
+  assert.equal(quote.monthlyMsrp, 50);
+});
+
 test("auto-match chooses Professional at its complete base capacity", () => {
   const selected = selectBestPlan(
     requirements({
@@ -102,4 +117,19 @@ test("term pricing applies a percentage discount before complimentary months", (
   assert.equal(pricing.percentageDiscount, 1200);
   assert.equal(pricing.complimentaryCredit, 160);
   assert.equal(pricing.totalDue, 4640);
+});
+
+test("monthly subscription pricing uses whole months and excludes complimentary months", () => {
+  const pricing = calculateContractPricing(100, {
+    billingMode: "monthly",
+    termMonths: 5,
+    discountPercent: 20,
+    complimentaryMonths: 2,
+  });
+  assert.equal(pricing.termMonths, 5);
+  assert.equal(pricing.termYears, undefined);
+  assert.equal(pricing.termTotal, 500);
+  assert.equal(pricing.percentageDiscount, 100);
+  assert.equal(pricing.complimentaryCredit, 0);
+  assert.equal(pricing.totalDue, 400);
 });

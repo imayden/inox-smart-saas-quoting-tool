@@ -3,7 +3,7 @@ import { APP_CONFIG } from "@/app/config/pricing";
 import type { PlanQuote } from "@/app/lib/pricing";
 import {
   calculateContractPricing,
-  effectiveTermYears,
+  formatTerm,
   hasBillToOrPlanDetails,
   hasQuoteAdjustments,
   type QuoteAdjustments,
@@ -104,7 +104,10 @@ function drawSummary(
 
 function drawCapacityTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
   const x = PDF.margin; const widths = [145, 64, 104, 94, 121]; const headerHeight = 19; const rowHeight = 18;
-  const headers = ["CAPACITY", "BASE", "ADD-ON CAPACITY", "TOTAL INCLUDED", mode === "both" ? "ADD-ON NET / MSRP" : `ADD-ON ${mode.toUpperCase()}`];
+  const additionalOnly = quote.pricingMethod === "additional-capacity-only";
+  const headers = additionalOnly
+    ? ["REQUESTED CAPACITY", "ADD-ON BUNDLE", "BILLED CAPACITY", "ADD-ON COUNT", mode === "both" ? "ADD-ON NET / MSRP" : `ADD-ON ${mode.toUpperCase()}`]
+    : ["CAPACITY", "BASE", "ADD-ON CAPACITY", "TOTAL INCLUDED", mode === "both" ? "ADD-ON NET / MSRP" : `ADD-ON ${mode.toUpperCase()}`];
   doc.setFillColor(PDF.ink); doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "F");
   let cursorX = x;
   headers.forEach((header, index) => { doc.setFont("helvetica", "bold"); doc.setFontSize(6.1); doc.setTextColor(PDF.white); doc.text(header, cursorX + 7, y + 12); cursorX += widths[index]; });
@@ -112,7 +115,9 @@ function drawCapacityTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode,
     const rowY = y + headerHeight + rowIndex * rowHeight;
     if (rowIndex % 2 === 0) { doc.setFillColor(PDF.soft); doc.rect(x, rowY, PDF.contentWidth, rowHeight, "F"); }
     doc.setDrawColor(PDF.border); doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight);
-    const values = [line.label, String(line.baseIncluded), line.addonCount > 0 ? `+${line.addonUnits} (${line.addonCount} x ${line.addonStep})` : "—", String(line.totalCapacity), line.addonCount > 0 ? priceForMode(line.addonNetCost, mode) : "—"];
+    const values = additionalOnly
+      ? [line.label, `+${line.addonStep}`, line.addonCount > 0 ? `+${line.addonUnits}` : "—", line.addonCount > 0 ? `${line.addonCount} × ${line.addonStep}` : "—", line.addonCount > 0 ? priceForMode(line.addonNetCost, mode) : "—"]
+      : [line.label, String(line.baseIncluded), line.addonCount > 0 ? `+${line.addonUnits} (${line.addonCount} x ${line.addonStep})` : "—", String(line.totalCapacity), line.addonCount > 0 ? priceForMode(line.addonNetCost, mode) : "—"];
     let cellX = x;
     values.forEach((value, index) => { doc.setFont("helvetica", index === 0 || index === 3 ? "bold" : "normal"); doc.setFontSize(index === 4 && mode === "both" ? 6.5 : 7.3); doc.setTextColor(index === 4 && line.addonCount > 0 ? PDF.text : PDF.muted); doc.text(value, cellX + 7, rowY + 11.7); cellX += widths[index]; });
   });
@@ -121,14 +126,14 @@ function drawCapacityTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode,
 
 function drawPricingTable(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMode, y: number) {
   const rows = [
-    { description: `${quote.plan.name} base monthly plan`, net: quote.plan.monthlyNet },
+    ...(quote.pricingMethod === "standard" ? [{ description: `${quote.plan.name} base monthly plan`, net: quote.baseMonthlyNet }] : []),
     ...quote.lines.filter((line) => line.addonCount > 0).map((line) => ({ description: `${line.label} · +${line.addonUnits} (${line.addonCount} add-on${line.addonCount === 1 ? "" : "s"})`, net: line.addonNetCost })),
   ];
   const x = PDF.margin; const headerHeight = 19; const rowHeight = 17; const descriptionWidth = mode === "both" ? 330 : 388; const priceWidth = (PDF.contentWidth - descriptionWidth) / (mode === "both" ? 2 : 1);
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, headerHeight, 4, 4, "FD"); drawLabel(doc, "Description", x + 7, y + 12);
   if (mode === "both") { drawLabel(doc, "NET", x + descriptionWidth + 7, y + 12); drawLabel(doc, "MSRP", x + descriptionWidth + priceWidth + 7, y + 12); } else drawLabel(doc, mode, x + descriptionWidth + 7, y + 12);
   rows.forEach((row, index) => {
-    const rowY = y + headerHeight + index * rowHeight; doc.setDrawColor(PDF.border); doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight); doc.setFont("helvetica", index === 0 ? "bold" : "normal"); doc.setFontSize(7.5); doc.setTextColor(PDF.text); doc.text(row.description, x + 7, rowY + 11.2);
+    const rowY = y + headerHeight + index * rowHeight; doc.setDrawColor(PDF.border); doc.line(x, rowY + rowHeight, x + PDF.contentWidth, rowY + rowHeight); doc.setFont("helvetica", index === 0 && quote.pricingMethod === "standard" ? "bold" : "normal"); doc.setFontSize(7.5); doc.setTextColor(PDF.text); doc.text(row.description, x + 7, rowY + 11.2);
     if (mode === "both") { doc.text(money(row.net), x + descriptionWidth + 7, rowY + 11.2); doc.text(money(row.net * APP_CONFIG.msrpMultiplier), x + descriptionWidth + priceWidth + 7, rowY + 11.2); } else doc.text(money(mode === "net" ? row.net : row.net * APP_CONFIG.msrpMultiplier), x + descriptionWidth + 7, rowY + 11.2);
   });
   return y + headerHeight + rows.length * rowHeight;
@@ -139,7 +144,7 @@ function drawContractSummary(doc: jsPDF, quote: PlanQuote, mode: QuoteDisplayMod
   const net = calculateContractPricing(quote.monthlyNet, adjustments); const msrp = calculateContractPricing(quote.monthlyMsrp, adjustments); const x = PDF.margin; const height = 76;
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(x, y, PDF.contentWidth, height, 5, 5, "FD");
   drawLabel(doc, "Contract quote", x + 9, y + 14);
-  doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(PDF.text); doc.text(`${effectiveTermYears(adjustments)} year${effectiveTermYears(adjustments) === 1 ? "" : "s"} (${net.termMonths} months)`, x + 105, y + 14);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(PDF.text); doc.text(formatTerm(adjustments), x + 105, y + 14);
   const rows = [
     ["Term total", net.termTotal, msrp.termTotal],
     ...(net.percentageDiscount > 0 ? [[`${net.discountPercent}% term discount`, -net.percentageDiscount, -msrp.percentageDiscount]] : []),
@@ -175,13 +180,14 @@ export function buildQuotePdfDocument(quote: PlanQuote, mode: QuoteDisplayMode, 
   if (options.logo) doc.addImage(options.logo, "PNG", PDF.margin, 26, 132, 17.5); else { doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.brandName, PDF.margin, 42); }
   doc.setFont("helvetica", "bold"); doc.setFontSize(8); doc.setTextColor(PDF.muted); doc.text("SAAS QUOTE", PDF.pageWidth - PDF.margin, 39, { align: "right" }); doc.setFontSize(22); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.quoteTitle, PDF.margin, 78); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.setTextColor(PDF.muted); doc.text(APP_CONFIG.quoteSubtitle, PDF.margin, 94);
   let y = drawSummary(doc, quote, quoteId, generatedAt, mode, details) + 18;
-  drawLabel(doc, "Included capacity", PDF.margin, y - 8); y = drawCapacityTable(doc, quote, mode, y) + 20;
-  drawLabel(doc, "Pricing detail", PDF.margin, y - 8); y = drawPricingTable(doc, quote, mode, y) + 18;
+  drawLabel(doc, quote.pricingMethod === "additional-capacity-only" ? "Additional capacity" : "Included capacity", PDF.margin, y - 8); y = drawCapacityTable(doc, quote, mode, y) + 20;
+  drawLabel(doc, quote.pricingMethod === "additional-capacity-only" ? "Additional capacity pricing" : "Pricing detail", PDF.margin, y - 8); y = drawPricingTable(doc, quote, mode, y) + 18;
   y = drawContractSummary(doc, quote, mode, adjustments, y) + (hasQuoteAdjustments(adjustments) ? 17 : 0);
   drawLabel(doc, "Quote totals", PDF.margin, y - 8); y = drawTotals(doc, quote, mode, y) + 16;
   doc.setFillColor(PDF.soft); doc.setDrawColor(PDF.border); doc.roundedRect(PDF.margin, y, PDF.contentWidth, 22, 5, 5, "FD"); doc.setFont("helvetica", "bold"); doc.setFontSize(6.8); doc.setTextColor(PDF.text); doc.text("FOR REFERENCE ONLY - This quote is not a formal invoice or binding offer.", PDF.pageWidth / 2, y + 14, { align: "center" });
   const footerY = Math.min(PDF.pageHeight - 20, y + 46); doc.setDrawColor(PDF.border); doc.line(PDF.margin, footerY - 13, PDF.pageWidth - PDF.margin, footerY - 13); doc.setFont("helvetica", "normal"); doc.setFontSize(6.8); doc.setTextColor(PDF.muted); doc.text(`All prices are in ${APP_CONFIG.currency}. Add-ons are billed monthly in whole bundles. Annual pricing is monthly pricing × ${APP_CONFIG.monthsPerYear}.`, PDF.margin, footerY);
-  if (mode !== "msrp") doc.text(`MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`, PDF.margin, footerY + 11);
+  if (quote.pricingMethod === "additional-capacity-only") doc.text("Existing plan base fee and included capacity are excluded from this quote.", PDF.margin, footerY + 11);
+  if (mode !== "msrp") doc.text(`MSRP is ${APP_CONFIG.msrpMultiplier}× NET. This quote was generated from the configured INOX Smart SaaS pricing rules.`, PDF.margin, footerY + (quote.pricingMethod === "additional-capacity-only" ? 22 : 11));
   doc.setFont("helvetica", "bold"); doc.setTextColor(PDF.ink); doc.text(APP_CONFIG.brandName, PDF.margin, PDF.pageHeight - 12); doc.setFont("helvetica", "normal"); doc.setTextColor(PDF.muted); doc.text("Letter · 8.5 × 11 in · 1 page", PDF.pageWidth - PDF.margin, PDF.pageHeight - 12, { align: "right" });
   return doc;
 }

@@ -10,7 +10,7 @@ import { APP_CONFIG } from "@/app/config/pricing";
 import { formatCurrency, type PlanQuote } from "@/app/lib/pricing";
 import {
   calculateContractPricing,
-  effectiveTermYears,
+  formatTerm,
   hasQuoteAdjustments,
   hasBillToOrPlanDetails,
   type QuoteAdjustments,
@@ -66,11 +66,12 @@ function QuotePreview({
   quote: PlanQuote;
 }) {
   const activeAddons = quote.lines.filter((line) => line.addonCount > 0);
+  const additionalCapacityOnly = quote.pricingMethod === "additional-capacity-only";
   const netContract = calculateContractPricing(quote.monthlyNet, adjustments);
   const msrpContract = calculateContractPricing(quote.monthlyMsrp, adjustments);
   const contract = mode === "net" ? netContract : msrpContract;
   const pricingRows = [
-    { description: `${quote.plan.name} base monthly plan`, net: quote.plan.monthlyNet },
+    ...(additionalCapacityOnly ? [] : [{ description: `${quote.plan.name} base monthly plan`, net: quote.baseMonthlyNet }]),
     ...activeAddons.map((line) => ({
       description: `${line.label} · +${line.addonUnits} (${line.addonCount} add-on${line.addonCount === 1 ? "" : "s"})`,
       net: line.addonNetCost,
@@ -110,15 +111,15 @@ function QuotePreview({
         </section>
       )}
       <section className={styles.sheetBlock}>
-        <h4>Included capacity</h4>
+        <h4>{additionalCapacityOnly ? "Additional capacity" : "Included capacity"}</h4>
+        {additionalCapacityOnly && <p className={styles.modeNote}>Existing plan base fee and included capacity are excluded from this quote.</p>}
         <div className={styles.tableScroll}>
           <table>
-            <thead><tr><th>Capacity</th><th>Base</th><th>Add-on capacity</th><th>Total included</th><th>Add-on {pricingViewLabel(mode)}</th></tr></thead>
+            <thead><tr>{additionalCapacityOnly ? <><th>Capacity</th><th>Bundle</th><th>Billed capacity</th><th>Add-on count</th></> : <><th>Capacity</th><th>Base</th><th>Add-on capacity</th><th>Total included</th></>}<th>Add-on {pricingViewLabel(mode)}</th></tr></thead>
             <tbody>{quote.lines.map((line) => (
               <tr key={line.key}>
-                <th scope="row">{line.label}</th><td>{line.baseIncluded}</td>
-                <td>{line.addonCount > 0 ? `+${line.addonUnits} (${line.addonCount} × ${line.addonStep})` : "—"}</td>
-                <td>{line.totalCapacity}</td>
+                <th scope="row">{line.label}</th>
+                {additionalCapacityOnly ? <><td>+{line.addonStep}</td><td>{line.addonCount > 0 ? `+${line.addonUnits}` : "—"}</td><td>{line.addonCount > 0 ? `${line.addonCount} × ${line.addonStep}` : "—"}</td></> : <><td>{line.baseIncluded}</td><td>{line.addonCount > 0 ? `+${line.addonUnits} (${line.addonCount} × ${line.addonStep})` : "—"}</td><td>{line.totalCapacity}</td></>}
                 <td>{line.addonCount === 0 ? "—" : mode === "both" ? `${formatCurrency(line.addonNetCost)} / ${formatCurrency(line.addonMsrpCost)}` : formatCurrency(mode === "net" ? line.addonNetCost : line.addonMsrpCost)}</td>
               </tr>
             ))}</tbody>
@@ -126,7 +127,7 @@ function QuotePreview({
         </div>
       </section>
       <section className={styles.sheetBlock}>
-        <h4>Pricing detail</h4>
+        <h4>{additionalCapacityOnly ? "Additional capacity pricing" : "Pricing detail"}</h4>
         <div className={styles.tableScroll}>
           <table>
             <thead><tr><th>Description</th>{mode !== "msrp" && <th>NET</th>}{mode !== "net" && <th>MSRP</th>}</tr></thead>
@@ -139,7 +140,7 @@ function QuotePreview({
       <section className={styles.sheetTotals} aria-label="Quote totals">
         <div className={styles.primaryTotal}><span>{mode === "msrp" ? "Monthly MSRP" : "Monthly NET"}</span><strong>{formatCurrency(mode === "msrp" ? quote.monthlyMsrp : quote.monthlyNet)}</strong><small>{APP_CONFIG.currency}</small></div>
         <div><span>{mode === "msrp" ? "Yearly MSRP" : "Yearly NET"}</span><strong>{formatCurrency(mode === "msrp" ? quote.yearlyMsrp : quote.yearlyNet)}</strong><small>{APP_CONFIG.currency}</small></div>
-        {hasQuoteAdjustments(adjustments) && <div><span>{effectiveTermYears(adjustments)}-year total due</span><strong>{formatCurrency(contract.totalDue)}</strong><small>{contract.termMonths} months · {mode === "msrp" ? "MSRP" : "NET"}</small></div>}
+        {hasQuoteAdjustments(adjustments) && <div><span>{formatTerm(adjustments)} total due</span><strong>{formatCurrency(contract.totalDue)}</strong><small>{mode === "msrp" ? "MSRP" : "NET"}</small></div>}
       </section>
       <p className={styles.sheetDisclaimer}><strong>For reference only</strong> — This quote is not a formal invoice or binding offer.</p>
       <footer className={styles.sheetFooter}><span>{APP_CONFIG.brandName}</span><span>Letter · 8.5 × 11 in · 1 page</span></footer>
