@@ -9,6 +9,7 @@ import {
 
 export type CapacityInputValue = number | "";
 export type CapacityRequirements = Record<CapacityKey, CapacityInputValue>;
+export type PricingMethod = "standard" | "additional-capacity-only";
 
 export interface QuoteLine {
   key: CapacityKey;
@@ -26,6 +27,8 @@ export interface QuoteLine {
 export interface PlanQuote {
   plan: PricingPlan;
   lines: QuoteLine[];
+  pricingMethod: PricingMethod;
+  baseMonthlyNet: number;
   monthlyNet: number;
   yearlyNet: number;
   monthlyMsrp: number;
@@ -56,16 +59,14 @@ export function getAddonCount(
 export function calculatePlanQuote(
   requirements: CapacityRequirements,
   plan: PricingPlan,
+  pricingMethod: PricingMethod = "standard",
 ): PlanQuote {
   let addonNetTotal = 0;
 
   const lines = CAPACITIES.map(({ key, label }) => {
     const required = requirements[key] === "" ? 0 : requirements[key];
-    const addonCount = getAddonCount(
-      requirements[key],
-      plan.included[key],
-      plan.addonStep[key],
-    );
+    const baseIncluded = pricingMethod === "standard" ? plan.included[key] : 0;
+    const addonCount = getAddonCount(requirements[key], baseIncluded, plan.addonStep[key]);
     const addonUnits = addonCount * plan.addonStep[key];
     const addonNetCost = addonCount * APP_CONFIG.addonNetPrice;
     addonNetTotal += addonNetCost;
@@ -74,22 +75,25 @@ export function calculatePlanQuote(
       key,
       label,
       required,
-      baseIncluded: plan.included[key],
+      baseIncluded,
       addonStep: plan.addonStep[key],
       addonCount,
       addonUnits,
-      totalCapacity: plan.included[key] + addonUnits,
+      totalCapacity: baseIncluded + addonUnits,
       addonNetCost,
       addonMsrpCost: addonNetCost * APP_CONFIG.msrpMultiplier,
     };
   });
 
-  const monthlyNet = plan.monthlyNet + addonNetTotal;
+  const baseMonthlyNet = pricingMethod === "standard" ? plan.monthlyNet : 0;
+  const monthlyNet = baseMonthlyNet + addonNetTotal;
   const monthlyMsrp = monthlyNet * APP_CONFIG.msrpMultiplier;
 
   return {
     plan,
     lines,
+    pricingMethod,
+    baseMonthlyNet,
     monthlyNet,
     yearlyNet: monthlyNet * APP_CONFIG.monthsPerYear,
     monthlyMsrp,

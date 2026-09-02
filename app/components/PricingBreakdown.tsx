@@ -2,7 +2,8 @@ import { APP_CONFIG } from "@/app/config/pricing";
 import { formatCurrency, type PlanQuote } from "@/app/lib/pricing";
 import {
   calculateContractPricing,
-  effectiveTermYears,
+  effectiveBillingMode,
+  formatTerm,
   hasQuoteAdjustments,
   normalizeDiscountPercent,
   normalizeWholeNumber,
@@ -38,6 +39,8 @@ export function PricingBreakdown({
   const netContract = calculateContractPricing(quote.monthlyNet, adjustments);
   const msrpContract = calculateContractPricing(quote.monthlyMsrp, adjustments);
   const showContract = hasQuoteAdjustments(adjustments);
+  const additionalCapacityOnly = quote.pricingMethod === "additional-capacity-only";
+  const billingMode = effectiveBillingMode(adjustments);
 
   function updateAdjustments(update: Partial<QuoteAdjustments>) {
     onAdjustmentsChange({ ...adjustments, ...update });
@@ -57,16 +60,26 @@ export function PricingBreakdown({
       </div>
 
       <div className={styles.breakdown}>
-        <div className={styles.line}>
-          <span>
-            <strong>{quote.plan.name}</strong>
-            <small>Base monthly plan</small>
-          </span>
-          <b>{formatPrice(quote.plan.monthlyNet, mode)}</b>
-        </div>
+        {additionalCapacityOnly ? (
+          <div className={`${styles.line} ${styles.methodNotice}`}>
+            <span>
+              <strong>Additional capacity only</strong>
+              <small>Existing plan base fee and included capacity are excluded.</small>
+            </span>
+            <b>{formatPrice(0, mode)}</b>
+          </div>
+        ) : (
+          <div className={styles.line}>
+            <span>
+              <strong>{quote.plan.name}</strong>
+              <small>Base monthly plan</small>
+            </span>
+            <b>{formatPrice(quote.baseMonthlyNet, mode)}</b>
+          </div>
+        )}
 
         {activeAddons.length === 0 ? (
-          <p className={styles.noAddons}>All requested capacity is covered by the base plan.</p>
+          <p className={styles.noAddons}>{additionalCapacityOnly ? "No additional capacity has been entered." : "All requested capacity is covered by the base plan."}</p>
         ) : (
           activeAddons.map((line) => (
             <div className={`${styles.line} ${styles.addonLine}`} key={line.key}>
@@ -118,36 +131,62 @@ export function PricingBreakdown({
           <span aria-hidden="true">⌄</span>
         </summary>
         <div className={styles.optionsBody}>
+          <fieldset className={styles.billingMode}>
+            <legend>Billing method</legend>
+            <label>
+              <input
+                checked={billingMode === "annual"}
+                name="billing-mode"
+                onChange={() => updateAdjustments({ billingMode: "annual", termMonths: undefined })}
+                type="radio"
+              />
+              <span><strong>Annual commitment</strong><small>Term is entered in whole years.</small></span>
+            </label>
+            <label>
+              <input
+                checked={billingMode === "monthly"}
+                name="billing-mode"
+                onChange={() => updateAdjustments({ billingMode: "monthly", complimentaryMonths: undefined })}
+                type="radio"
+              />
+              <span><strong>Monthly subscription</strong><small>Term is entered in whole months.</small></span>
+            </label>
+          </fieldset>
           <label>
-            <span>Term length (years)</span>
+            <span>{billingMode === "annual" ? "Term length (years)" : "Term length (months)"}</span>
             <input
-              aria-label="Term length in years"
+              aria-label={`Term length in ${billingMode === "annual" ? "years" : "months"}`}
               inputMode="numeric"
               min="1"
               onChange={(event) =>
-                updateAdjustments({ termYears: normalizeWholeNumber(event.target.value, 1) })
+                updateAdjustments(
+                  billingMode === "annual"
+                    ? { termYears: normalizeWholeNumber(event.target.value, 1) }
+                    : { termMonths: normalizeWholeNumber(event.target.value, 1) },
+                )
               }
-              placeholder="1"
+              placeholder={billingMode === "annual" ? "1" : "e.g. 6"}
               type="number"
-              value={adjustments.termYears ?? ""}
+              value={billingMode === "annual" ? adjustments.termYears ?? "" : adjustments.termMonths ?? ""}
             />
           </label>
           <label>
             <span>Term discount (%)</span>
             <input
               aria-label="Term discount percentage"
-              inputMode="numeric"
+              inputMode="decimal"
               max="100"
               min="0"
               onChange={(event) =>
                 updateAdjustments({ discountPercent: normalizeDiscountPercent(event.target.value) })
               }
-              placeholder="e.g. 20"
+              placeholder="e.g. 28.56"
+              step="0.01"
               type="number"
               value={adjustments.discountPercent ?? ""}
             />
           </label>
-          <label>
+          {billingMode === "annual" && <label>
             <span>Complimentary months</span>
             <input
               aria-label="Complimentary months"
@@ -160,10 +199,11 @@ export function PricingBreakdown({
               type="number"
               value={adjustments.complimentaryMonths ?? ""}
             />
-          </label>
+          </label>}
           <p>
-            Percentage savings apply to the full term first. Complimentary months are then
-            credited at the discounted monthly rate and cannot exceed the term duration.
+            {billingMode === "annual"
+              ? "Percentage savings apply to the full term first. Complimentary months are then credited at the discounted monthly rate and cannot exceed the term duration."
+              : "The total is calculated from whole subscription months, then the percentage discount is applied to the full term."}
           </p>
         </div>
       </details>
@@ -173,7 +213,7 @@ export function PricingBreakdown({
           <div className={styles.contractHeading}>
             <span>Contract quote</span>
             <strong>
-              {effectiveTermYears(adjustments)} year{effectiveTermYears(adjustments) === 1 ? "" : "s"} ({netContract.termMonths} months)
+              {formatTerm(adjustments)}
             </strong>
           </div>
           {mode === "both" ? (
